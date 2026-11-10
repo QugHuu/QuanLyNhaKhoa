@@ -3,11 +3,10 @@ package com.nhakhoa.gui;
 import com.nhakhoa.dao.KhoDAO;
 import com.nhakhoa.model.LoVatTu;
 import com.nhakhoa.model.VatTu;
-import com.nhakhoa.util.FormatUtil;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -25,34 +24,35 @@ public class PanelKhoVatTu extends JPanel {
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public PanelKhoVatTu() {
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(new Color(245, 247, 250));
+        setLayout(new BorderLayout());
+        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setBackground(UITheme.BG_MAIN);
 
-        JLabel lblTitle = new JLabel("QUẢN LÝ KHO & THEO DÕI VẬT TƯ THEO NGUYÊN TẮC FEFO (PHÂN HỆ 6)");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(new Color(25, 42, 86));
+        JPanel pnlCard = UITheme.createCard();
+        pnlCard.setLayout(new BorderLayout());
 
         JTabbedPane tabMain = new JTabbedPane();
 
         // TAB 1: Quản lý Lô theo FEFO
-        JPanel pnlTab1 = new JPanel(new BorderLayout(10, 10));
-        pnlTab1.setBackground(Color.WHITE);
-        pnlTab1.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel pnlTab1 = new JPanel(new BorderLayout(0, 12));
+        pnlTab1.setOpaque(false);
 
-        // Form thêm lô mới
-        JPanel pnlNhapLo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        pnlNhapLo.setOpaque(false);
+        // Form nhập lô mới
+        JPanel pnlNhapLo = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        pnlNhapLo.setBackground(new Color(241, 245, 249));
+        pnlNhapLo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(8, 12, 8, 12)
+        ));
+
         cboVatTu = new JComboBox<>();
-        cboVatTu.setPreferredSize(new Dimension(200, 28));
+        cboVatTu.setPreferredSize(new Dimension(200, 30));
         txtSoLo = new JTextField(10);
-        txtHSD = new JTextField(8); // dd/MM/yyyy
+        txtHSD = new JTextField(8);
         txtHSD.setText("31/12/2027");
         txtSLTon = new JTextField("50", 5);
 
-        JButton btnNhapLo = new JButton("📥 Nhập Lô Mới");
-        btnNhapLo.setBackground(new Color(46, 204, 113));
-        btnNhapLo.setForeground(Color.BLACK);
+        JButton btnNhapLo = UITheme.createButton("📥  Nhập Lô Mới", UITheme.PRIMARY, Color.WHITE);
         btnNhapLo.addActionListener(e -> xuLyNhapLo());
 
         pnlNhapLo.add(new JLabel("Vật tư:"));
@@ -71,62 +71,44 @@ public class PanelKhoVatTu extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblLoVatTu = new JTable(modelLo);
-        tblLoVatTu.setRowHeight(25);
-
-        // Đánh dấu màu đỏ cho lô hết hạn / màu cam cho lô sắp hết hạn
-        tblLoVatTu.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                if (!isSelected) {
-                    String tinhTrang = table.getValueAt(row, 6).toString();
-                    if ("HET_HANG".equalsIgnoreCase(tinhTrang)) {
-                        c.setForeground(Color.GRAY);
-                    } else {
-                        c.setForeground(Color.BLACK);
-                    }
-                }
-                return c;
-            }
-        });
+        UITheme.formatTable(tblLoVatTu);
+        tblLoVatTu.getColumnModel().getColumn(6).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
         pnlTab1.add(pnlNhapLo, BorderLayout.NORTH);
         pnlTab1.add(new JScrollPane(tblLoVatTu), BorderLayout.CENTER);
 
         // TAB 2: Danh mục tổng hợp vật tư & định mức tồn
-        JPanel pnlTab2 = new JPanel(new BorderLayout(10, 10));
-        pnlTab2.setBackground(Color.WHITE);
-        pnlTab2.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel pnlTab2 = new JPanel(new BorderLayout(0, 10));
+        pnlTab2.setOpaque(false);
 
-        String[] headersTH = {"Mã Vật Tư", "Tên Vật Tư", "Đơn Vị Tính", "Định Mức Tồn Tối Thiểu", "Tổng Tồn Hiện Tại", "Đánh Giá"};
+        String[] headersTH = {"Mã Vật Tư", "Tên Vật Tư Nha Khoa", "Đơn Vị Tính", "Định Mức Tồn Tối Thiểu", "Tổng Tồn Hiện Tại", "Đánh Giá Tiêu Chuẩn"};
         modelTongHop = new DefaultTableModel(headersTH, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblVatTuTongHop = new JTable(modelTongHop);
-        tblVatTuTongHop.setRowHeight(25);
+        UITheme.formatTable(tblVatTuTongHop);
         pnlTab2.add(new JScrollPane(tblVatTuTongHop), BorderLayout.CENTER);
 
         // TAB 3: Cảnh báo Hạn dùng & Tồn thấp (FR-58, FR-60)
-        JPanel pnlTab3 = new JPanel(new BorderLayout(10, 10));
-        pnlTab3.setBackground(Color.WHITE);
-        pnlTab3.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel pnlTab3 = new JPanel(new BorderLayout(0, 10));
+        pnlTab3.setOpaque(false);
 
-        String[] headersCB = {"Loại Cảnh Báo", "Tên Mục", "Chi Tiết Cảnh Báo", "Mức Độ"};
+        String[] headersCB = {"Loại Cảnh Báo", "Tên Mục / Mặt Hàng", "Chi Tiết Thông Số Cảnh Báo", "Mức Độ Cần Xử Lý"};
         modelCanhBao = new DefaultTableModel(headersCB, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblCanhBao = new JTable(modelCanhBao);
-        tblCanhBao.setRowHeight(26);
+        UITheme.formatTable(tblCanhBao);
         pnlTab3.add(new JScrollPane(tblCanhBao), BorderLayout.CENTER);
 
-        tabMain.addTab("📦 Quản Lý Lô Theo FEFO (HanSuDung ASC)", pnlTab1);
-        tabMain.addTab("📊 Tổng Hợp Tồn Kho & Định Mức", pnlTab2);
-        tabMain.addTab("⚠️ Bảng Cảnh Báo Cận Hạn & Dưới Định Mức", pnlTab3);
+        tabMain.addTab("📦  Quản Lý Lô Theo FEFO (HanSuDung ASC)", pnlTab1);
+        tabMain.addTab("📊  Tổng Hợp Tồn Kho & Định Mức", pnlTab2);
+        tabMain.addTab("⚠️  Bảng Cảnh Báo Cận Hạn & Dưới Định Mức", pnlTab3);
 
-        add(lblTitle, BorderLayout.NORTH);
-        add(tabMain, BorderLayout.CENTER);
+        pnlCard.add(tabMain, BorderLayout.CENTER);
+        add(pnlCard, BorderLayout.CENTER);
 
         taiDanhSachVatTu();
         taiDuLieu();
@@ -141,7 +123,6 @@ public class PanelKhoVatTu extends JPanel {
     }
 
     public void taiDuLieu() {
-        // 1. Tải Lô FEFO
         modelLo.setRowCount(0);
         List<LoVatTu> listLo = khoDAO.getAllLoVatTu();
         for (LoVatTu lo : listLo) {
@@ -156,11 +137,10 @@ public class PanelKhoVatTu extends JPanel {
             });
         }
 
-        // 2. Tải tổng hợp
         modelTongHop.setRowCount(0);
         List<VatTu> listVT = khoDAO.getAllVatTu();
         for (VatTu vt : listVT) {
-            String danhGia = vt.isCanhBaoTonThap() ? "⚠️ DƯỚI ĐỊNH MỨC TỐI THIỂU" : "✅ Đạt chuẩn";
+            String danhGia = vt.isCanhBaoTonThap() ? "⚠️ DƯỚI ĐỊNH MỨC TỐI THIỂU" : "✅ Đạt chuẩn tồn";
             modelTongHop.addRow(new Object[]{
                     vt.getMaVatTu(),
                     vt.getTenVatTu(),
@@ -171,7 +151,6 @@ public class PanelKhoVatTu extends JPanel {
             });
         }
 
-        // 3. Tải cảnh báo
         modelCanhBao.setRowCount(0);
         List<LoVatTu> listSapHetHan = khoDAO.getLoSapHetHan();
         for (LoVatTu lo : listSapHetHan) {

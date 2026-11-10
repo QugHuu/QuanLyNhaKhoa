@@ -2,11 +2,10 @@ package com.nhakhoa.gui;
 
 import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.model.BenhNhan;
-import com.nhakhoa.util.FormatUtil;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -23,68 +22,59 @@ public class PanelBenhNhan extends JPanel {
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public PanelBenhNhan() {
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(new Color(245, 247, 250));
+        setLayout(new BorderLayout(18, 0));
+        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setBackground(UITheme.BG_MAIN);
 
-        // Header
-        JLabel lblHeader = new JLabel("QUẢN LÝ HỒ SƠ BỆNH NHÂN (PHÂN HỆ 2)");
-        lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblHeader.setForeground(new Color(25, 42, 86));
+        // LEFT: Form Card
+        JPanel pnlLeftCard = UITheme.createCard();
+        pnlLeftCard.setLayout(new BorderLayout(0, 14));
+        pnlLeftCard.setPreferredSize(new Dimension(380, 0));
 
-        // LEFT: Form nhập liệu
-        JPanel pnlLeft = new JPanel(new BorderLayout(10, 10));
-        pnlLeft.setPreferredSize(new Dimension(360, 0));
-        pnlLeft.setBackground(Color.WHITE);
-        pnlLeft.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        JLabel lblFormTitle = new JLabel("THÔNG TIN HỒ SƠ BỆNH NHÂN");
+        lblFormTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblFormTitle.setForeground(UITheme.TEXT_DARK);
 
-        JPanel pnlForm = new JPanel(new GridLayout(6, 2, 8, 12));
+        JPanel pnlForm = new JPanel(new GridLayout(5, 1, 0, 8));
         pnlForm.setOpaque(false);
 
         txtMaBN = new JTextField();
         txtMaBN.setEditable(false);
-        txtMaBN.setBackground(new Color(240, 240, 240));
+        txtMaBN.setBackground(new Color(241, 245, 249));
 
         txtHoTen = new JTextField();
-        txtNgaySinh = new JTextField(); // định dạng dd/MM/yyyy
+        txtNgaySinh = new JTextField();
         txtCCCD = new JTextField();
         txtSDT = new JTextField();
 
-        pnlForm.add(new JLabel("Mã BN:"));
-        pnlForm.add(txtMaBN);
-        pnlForm.add(new JLabel("Họ và Tên (*):"));
-        pnlForm.add(txtHoTen);
-        pnlForm.add(new JLabel("Ngày sinh (dd/MM/yyyy):"));
-        pnlForm.add(txtNgaySinh);
-        pnlForm.add(new JLabel("Số CCCD:"));
-        pnlForm.add(txtCCCD);
-        pnlForm.add(new JLabel("Số Điện Thoại (*):"));
-        pnlForm.add(txtSDT);
+        pnlForm.add(taoFieldInput("Mã bệnh nhân:", txtMaBN));
+        pnlForm.add(taoFieldInput("Họ và tên (*):", txtHoTen));
+        pnlForm.add(taoFieldInput("Ngày sinh (dd/MM/yyyy):", txtNgaySinh));
+        pnlForm.add(taoFieldInput("Số CCCD / Định danh:", txtCCCD));
+        pnlForm.add(taoFieldInput("Số điện thoại (*):", txtSDT));
 
-        JPanel pnlTienSu = new JPanel(new BorderLayout(5, 5));
+        JPanel pnlTienSu = new JPanel(new BorderLayout(0, 4));
         pnlTienSu.setOpaque(false);
-        pnlTienSu.add(new JLabel("Tiền sử bệnh / Dị ứng:"), BorderLayout.NORTH);
+        JLabel lblTS = new JLabel("Tiền sử bệnh lý / Dị ứng thuốc:");
+        lblTS.setFont(UITheme.FONT_BOLD);
+        lblTS.setForeground(UITheme.TEXT_DARK);
         txtTienSu = new JTextArea(4, 20);
         txtTienSu.setLineWrap(true);
+        pnlTienSu.add(lblTS, BorderLayout.NORTH);
         pnlTienSu.add(new JScrollPane(txtTienSu), BorderLayout.CENTER);
 
-        // Buttons
+        // Các nút thao tác
         JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 8, 8));
         pnlButtons.setOpaque(false);
-        JButton btnThem = new JButton("➕ Thêm mới");
-        JButton btnSua = new JButton("✏️ Cập nhật");
-        JButton btnXoa = new JButton("🔒 Khóa hồ sơ");
-        JButton btnLamMoi = new JButton("🔄 Làm mới");
 
-        btnThem.setBackground(new Color(46, 204, 113));
-        btnThem.setForeground(Color.BLACK);
-        btnSua.setBackground(new Color(52, 152, 219));
-        btnSua.setForeground(Color.BLACK);
-        btnXoa.setBackground(new Color(231, 76, 60));
-        btnXoa.setForeground(Color.BLACK);
+        JButton btnThem = UITheme.createButton("➕  Thêm mới", UITheme.PRIMARY, Color.WHITE);
+        JButton btnSua = UITheme.createButton("✏️  Cập nhật", UITheme.INFO, Color.WHITE);
+        JButton btnXoa = UITheme.createButton("🔒  Khóa hồ sơ", UITheme.DANGER, Color.WHITE);
+        JButton btnLamMoi = UITheme.createButton("🔄  Làm mới", Color.WHITE, UITheme.TEXT_DARK);
+        btnLamMoi.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(8, 12, 8, 12)
+        ));
 
         btnThem.addActionListener(e -> xuLyThem());
         btnSua.addActionListener(e -> xuLySua());
@@ -96,40 +86,38 @@ public class PanelBenhNhan extends JPanel {
         pnlButtons.add(btnXoa);
         pnlButtons.add(btnLamMoi);
 
-        JPanel pnlFormAll = new JPanel(new BorderLayout(10, 10));
-        pnlFormAll.setOpaque(false);
-        pnlFormAll.add(pnlForm, BorderLayout.NORTH);
-        pnlFormAll.add(pnlTienSu, BorderLayout.CENTER);
-        pnlFormAll.add(pnlButtons, BorderLayout.SOUTH);
+        JPanel pnlFormWrapper = new JPanel(new BorderLayout(0, 10));
+        pnlFormWrapper.setOpaque(false);
+        pnlFormWrapper.add(pnlForm, BorderLayout.NORTH);
+        pnlFormWrapper.add(pnlTienSu, BorderLayout.CENTER);
 
-        pnlLeft.add(new JLabel("THÔNG TIN BỆNH NHÂN", JLabel.CENTER), BorderLayout.NORTH);
-        pnlLeft.add(pnlFormAll, BorderLayout.CENTER);
+        pnlLeftCard.add(lblFormTitle, BorderLayout.NORTH);
+        pnlLeftCard.add(pnlFormWrapper, BorderLayout.CENTER);
+        pnlLeftCard.add(pnlButtons, BorderLayout.SOUTH);
 
-        // RIGHT: Danh sách + Tìm kiếm
-        JPanel pnlRight = new JPanel(new BorderLayout(10, 10));
-        pnlRight.setBackground(Color.WHITE);
-        pnlRight.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        // RIGHT: Danh sách + Tìm kiếm Card
+        JPanel pnlRightCard = UITheme.createCard();
+        pnlRightCard.setLayout(new BorderLayout(0, 12));
 
-        JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlSearch.setOpaque(false);
         txtTimKiem = new JTextField(20);
-        JButton btnTim = new JButton("🔍 Tìm kiếm");
+        txtTimKiem.putClientProperty("JTextField.placeholderText", "Tìm theo Họ tên hoặc SĐT...");
+        JButton btnTim = UITheme.createButton("🔍 Tìm", UITheme.PRIMARY, Color.WHITE);
         btnTim.addActionListener(e -> xuLyTimKiem());
-        pnlSearch.add(new JLabel("Tìm theo Tên / SĐT:"));
+
+        pnlSearch.add(new JLabel("Tìm kiếm:"));
         pnlSearch.add(txtTimKiem);
         pnlSearch.add(btnTim);
 
-        String[] headers = {"Mã BN", "Họ Tên", "Ngày Sinh", "Số CCCD", "SĐT", "Tiền Sử Bệnh", "Trạng Thái"};
+        String[] headers = {"Mã BN", "Họ Tên Bệnh Nhân", "Ngày Sinh", "Số CCCD", "SĐT", "Tiền Sử Bệnh", "Trạng Thái"};
         modelBenhNhan = new DefaultTableModel(headers, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
         tblBenhNhan = new JTable(modelBenhNhan);
-        tblBenhNhan.setRowHeight(26);
-        tblBenhNhan.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        UITheme.formatTable(tblBenhNhan);
+        tblBenhNhan.getColumnModel().getColumn(6).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
         tblBenhNhan.getSelectionModel().addListSelectionListener(e -> {
             int row = tblBenhNhan.getSelectedRow();
@@ -143,15 +131,25 @@ public class PanelBenhNhan extends JPanel {
             }
         });
 
-        pnlRight.add(pnlSearch, BorderLayout.NORTH);
-        pnlRight.add(new JScrollPane(tblBenhNhan), BorderLayout.CENTER);
+        pnlRightCard.add(pnlSearch, BorderLayout.NORTH);
+        pnlRightCard.add(new JScrollPane(tblBenhNhan), BorderLayout.CENTER);
 
-        add(lblHeader, BorderLayout.NORTH);
-        add(pnlLeft, BorderLayout.WEST);
-        add(pnlRight, BorderLayout.CENTER);
+        add(pnlLeftCard, BorderLayout.WEST);
+        add(pnlRightCard, BorderLayout.CENTER);
 
         taiDuLieu();
         lamMoiForm();
+    }
+
+    private JPanel taoFieldInput(String label, JComponent comp) {
+        JPanel p = new JPanel(new BorderLayout(0, 3));
+        p.setOpaque(false);
+        JLabel l = new JLabel(label);
+        l.setFont(UITheme.FONT_BOLD);
+        l.setForeground(UITheme.TEXT_DARK);
+        p.add(l, BorderLayout.NORTH);
+        p.add(comp, BorderLayout.CENTER);
+        return p;
     }
 
     private void taiDuLieu() {

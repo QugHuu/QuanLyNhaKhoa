@@ -4,6 +4,7 @@ import com.nhakhoa.dao.LichHenDAO;
 import com.nhakhoa.dao.ThongKeDAO;
 import com.nhakhoa.model.LichHen;
 import com.nhakhoa.util.FormatUtil;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,17 +24,12 @@ public class PanelTongQuan extends JPanel {
     private LichHenDAO lichHenDAO = new LichHenDAO();
 
     public PanelTongQuan() {
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
-        setBackground(new Color(245, 247, 250));
+        setLayout(new BorderLayout(0, 20));
+        setBorder(new EmptyBorder(20, 24, 20, 24));
+        setBackground(UITheme.BG_MAIN);
 
-        // Tiêu đề
-        JLabel lblTitle = new JLabel("BẢNG TỔNG QUAN HỆ THỐNG PHÒNG KHÁM");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lblTitle.setForeground(new Color(25, 42, 86));
-
-        // Panel chứa các thẻ KPI
-        JPanel pnlKPI = new JPanel(new GridLayout(1, 4, 15, 0));
+        // TOP: 4 Thẻ chỉ số KPI
+        JPanel pnlKPI = new JPanel(new GridLayout(1, 4, 16, 0));
         pnlKPI.setOpaque(false);
 
         lblDoanhThu = new JLabel("0 đ");
@@ -41,83 +37,92 @@ public class PanelTongQuan extends JPanel {
         lblLichHen = new JLabel("0");
         lblKhoCanhBao = new JLabel("0");
 
-        pnlKPI.add(taoTheKPI("DOANH THU", lblDoanhThu, new Color(46, 204, 113), "💰"));
-        pnlKPI.add(taoTheKPI("TỔNG BỆNH NHÂN", lblBenhNhan, new Color(52, 152, 219), "👥"));
-        pnlKPI.add(taoTheKPI("LỊCH HẸN HÔM NAY", lblLichHen, new Color(155, 89, 182), "📅"));
-        pnlKPI.add(taoTheKPI("CẢNH BÁO KHO (FEFO)", lblKhoCanhBao, new Color(231, 76, 60), "⚠️"));
+        pnlKPI.add(taoTheKPI("TỔNG DOANH THU", lblDoanhThu, UITheme.SUCCESS, "💰", "Thực thu toàn phòng khám"));
+        pnlKPI.add(taoTheKPI("HỒ SƠ BỆNH NHÂN", lblBenhNhan, UITheme.INFO, "👥", "Đang quản lý điều trị"));
+        pnlKPI.add(taoTheKPI("LỊCH HẸN HÔM NAY", lblLichHen, new Color(139, 92, 246), "📅", "Số lượt đặt khám"));
+        pnlKPI.add(taoTheKPI("CẢNH BÁO KHO FEFO", lblKhoCanhBao, UITheme.DANGER, "⚠️", "Cận hạn / Dưới định mức"));
 
-        JPanel pnlTop = new JPanel(new BorderLayout(0, 15));
-        pnlTop.setOpaque(false);
-        pnlTop.add(lblTitle, BorderLayout.NORTH);
-        pnlTop.add(pnlKPI, BorderLayout.CENTER);
-
-        // Bảng lịch hẹn hôm nay
-        JPanel pnlTable = new JPanel(new BorderLayout(0, 10));
-        pnlTable.setBackground(Color.WHITE);
-        pnlTable.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
-
-        JLabel lblSub = new JLabel("DANH SÁCH LỊCH HẸN KHÁM HÔM NAY");
-        lblSub.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblSub.setForeground(new Color(44, 62, 80));
-
-        JButton btnReload = new JButton("🔄 Làm mới số liệu");
-        btnReload.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        btnReload.addActionListener(e -> taiDuLieu());
+        // CENTER: Bảng danh sách lịch hẹn hôm nay
+        JPanel pnlTableCard = UITheme.createCard();
+        pnlTableCard.setLayout(new BorderLayout(0, 14));
 
         JPanel pnlTableHeader = new JPanel(new BorderLayout());
         pnlTableHeader.setOpaque(false);
+
+        JLabel lblSub = new JLabel("DANH SÁCH LỊCH HẸN KHÁM BỆNH TRONG NGÀY");
+        lblSub.setFont(UITheme.FONT_SUBTITLE);
+        lblSub.setForeground(UITheme.TEXT_DARK);
+
+        JButton btnReload = UITheme.createButton("🔄  Làm mới số liệu", Color.WHITE, UITheme.TEXT_DARK);
+        btnReload.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(6, 12, 6, 12)
+        ));
+        btnReload.addActionListener(e -> taiDuLieu());
+
         pnlTableHeader.add(lblSub, BorderLayout.WEST);
         pnlTableHeader.add(btnReload, BorderLayout.EAST);
 
-        String[] headers = {"Mã Lịch", "Bệnh Nhân", "Số Điện Thoại", "Bác Sĩ", "Ghế Khám", "Khung Giờ", "STT", "Trạng Thái"};
+        String[] headers = {"Mã Lịch", "Bệnh Nhân", "Số Điện Thoại", "Bác Sĩ", "Ghế Điều Trị", "Khung Giờ Hẹn", "STT Chờ", "Trạng Thái"};
         modelLichHen = new DefaultTableModel(headers, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tblLichHenHomNay = new JTable(modelLichHen);
-        tblLichHenHomNay.setRowHeight(28);
-        tblLichHenHomNay.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tblLichHenHomNay.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        UITheme.formatTable(tblLichHenHomNay);
+        tblLichHenHomNay.getColumnModel().getColumn(7).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
-        pnlTable.add(pnlTableHeader, BorderLayout.NORTH);
-        pnlTable.add(new JScrollPane(tblLichHenHomNay), BorderLayout.CENTER);
+        pnlTableCard.add(pnlTableHeader, BorderLayout.NORTH);
+        pnlTableCard.add(new JScrollPane(tblLichHenHomNay), BorderLayout.CENTER);
 
-        add(pnlTop, BorderLayout.NORTH);
-        add(pnlTable, BorderLayout.CENTER);
+        add(pnlKPI, BorderLayout.NORTH);
+        add(pnlTableCard, BorderLayout.CENTER);
 
         taiDuLieu();
     }
 
-    private JPanel taoTheKPI(String title, JLabel lblValue, Color color, String icon) {
-        JPanel card = new JPanel(new BorderLayout());
+    private JPanel taoTheKPI(String title, JLabel lblValue, Color accentColor, String icon, String note) {
+        JPanel card = new JPanel(new BorderLayout(0, 6));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 5, 0, 0, color),
+                BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(225, 230, 235)),
-                        new EmptyBorder(15, 15, 15, 15)
+                        BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                        new EmptyBorder(14, 16, 14, 16)
                 )
         ));
 
-        JLabel lblTitle = new JLabel(icon + " " + title);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblTitle.setForeground(new Color(120, 130, 140));
+        JPanel pnlTop = new JPanel(new BorderLayout());
+        pnlTop.setOpaque(false);
 
-        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblValue.setForeground(new Color(40, 50, 60));
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblTitle.setForeground(UITheme.TEXT_MUTED);
 
-        card.add(lblTitle, BorderLayout.NORTH);
+        JLabel lblIcon = new JLabel(icon);
+        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
+
+        pnlTop.add(lblTitle, BorderLayout.WEST);
+        pnlTop.add(lblIcon, BorderLayout.EAST);
+
+        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblValue.setForeground(UITheme.TEXT_DARK);
+
+        JLabel lblNote = new JLabel(note);
+        lblNote.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblNote.setForeground(UITheme.TEXT_MUTED);
+
+        card.add(pnlTop, BorderLayout.NORTH);
         card.add(lblValue, BorderLayout.CENTER);
+        card.add(lblNote, BorderLayout.SOUTH);
+
         return card;
     }
 
     public void taiDuLieu() {
         lblDoanhThu.setText(FormatUtil.formatMoney(thongKeDAO.getTongDoanhThu()));
-        lblBenhNhan.setText(String.valueOf(thongKeDAO.getSoLuongBenhNhan()));
-        lblLichHen.setText(String.valueOf(thongKeDAO.getSoLuongLichHenHomNay()));
+        lblBenhNhan.setText(String.valueOf(thongKeDAO.getSoLuongBenhNhan()) + " người");
+        lblLichHen.setText(String.valueOf(thongKeDAO.getSoLuongLichHenHomNay()) + " lượt");
         lblKhoCanhBao.setText(String.valueOf(thongKeDAO.getSoVatTuCanhBao()) + " mục");
 
         modelLichHen.setRowCount(0);
@@ -130,7 +135,7 @@ public class PanelTongQuan extends JPanel {
                     lh.getTenBS(),
                     lh.getMaGhe(),
                     lh.getGioBatDau() + " - " + lh.getGioKetThuc(),
-                    lh.getSoThuTuCho(),
+                    lh.getSoThuTuCho() > 0 ? "STT " + lh.getSoThuTuCho() : "-",
                     lh.getTinhTrang()
             });
         }

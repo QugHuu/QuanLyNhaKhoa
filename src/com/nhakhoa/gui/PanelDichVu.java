@@ -3,6 +3,7 @@ package com.nhakhoa.gui;
 import com.nhakhoa.dao.DichVuDAO;
 import com.nhakhoa.model.DichVu;
 import com.nhakhoa.util.FormatUtil;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -19,53 +20,44 @@ public class PanelDichVu extends JPanel {
     private DichVuDAO dichVuDAO = new DichVuDAO();
 
     public PanelDichVu() {
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(new Color(245, 247, 250));
+        setLayout(new BorderLayout(18, 0));
+        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setBackground(UITheme.BG_MAIN);
 
-        JLabel lblTitle = new JLabel("DANH MỤC DỊCH VỤ & BẢNG GIÁ NIÊM YẾT (PHÂN HỆ 5)");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(new Color(25, 42, 86));
+        // LEFT: Form Card
+        JPanel pnlLeftCard = UITheme.createCard();
+        pnlLeftCard.setLayout(new BorderLayout(0, 14));
+        pnlLeftCard.setPreferredSize(new Dimension(360, 0));
 
-        // LEFT: Form
-        JPanel pnlLeft = new JPanel(new BorderLayout(10, 10));
-        pnlLeft.setPreferredSize(new Dimension(360, 0));
-        pnlLeft.setBackground(Color.WHITE);
-        pnlLeft.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        JLabel lblFormTitle = new JLabel("THỦ THUẬT & DỊCH VỤ");
+        lblFormTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblFormTitle.setForeground(UITheme.TEXT_DARK);
 
-        JPanel pnlForm = new JPanel(new GridLayout(4, 2, 8, 12));
+        JPanel pnlForm = new JPanel(new GridLayout(4, 1, 0, 8));
         pnlForm.setOpaque(false);
 
         txtMaDV = new JTextField(dichVuDAO.taoMaDVMoi());
         txtMaDV.setEditable(false);
-        txtMaDV.setBackground(new Color(240, 240, 240));
+        txtMaDV.setBackground(new Color(241, 245, 249));
 
         txtTenDV = new JTextField();
         txtDonGia = new JTextField();
         cboTinhTrang = new JComboBox<>(new String[]{"DANG_AP_DUNG", "NGUNG_AP_DUNG"});
 
-        pnlForm.add(new JLabel("Mã Dịch Vụ:"));
-        pnlForm.add(txtMaDV);
-        pnlForm.add(new JLabel("Tên Dịch Vụ:"));
-        pnlForm.add(txtTenDV);
-        pnlForm.add(new JLabel("Đơn Giá (VNĐ):"));
-        pnlForm.add(txtDonGia);
-        pnlForm.add(new JLabel("Tình Trạng:"));
-        pnlForm.add(cboTinhTrang);
+        pnlForm.add(taoFieldInput("Mã dịch vụ:", txtMaDV));
+        pnlForm.add(taoFieldInput("Tên dịch vụ nha khoa:", txtTenDV));
+        pnlForm.add(taoFieldInput("Đơn giá niêm yết (VNĐ):", txtDonGia));
+        pnlForm.add(taoFieldInput("Trạng thái áp dụng:", cboTinhTrang));
 
-        JPanel pnlButtons = new JPanel(new GridLayout(1, 3, 8, 8));
+        JPanel pnlButtons = new JPanel(new GridLayout(1, 3, 8, 0));
         pnlButtons.setOpaque(false);
-        JButton btnThem = new JButton("➕ Thêm");
-        JButton btnSua = new JButton("✏️ Sửa");
-        JButton btnLamMoi = new JButton("🔄 Làm mới");
-
-        btnThem.setBackground(new Color(46, 204, 113));
-        btnThem.setForeground(Color.BLACK);
-        btnSua.setBackground(new Color(52, 152, 219));
-        btnSua.setForeground(Color.BLACK);
+        JButton btnThem = UITheme.createButton("➕ Thêm", UITheme.PRIMARY, Color.WHITE);
+        JButton btnSua = UITheme.createButton("✏️ Sửa", UITheme.INFO, Color.WHITE);
+        JButton btnLamMoi = UITheme.createButton("🔄 Làm mới", Color.WHITE, UITheme.TEXT_DARK);
+        btnLamMoi.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(8, 8, 8, 8)
+        ));
 
         btnThem.addActionListener(e -> xuLyThem());
         btnSua.addActionListener(e -> xuLySua());
@@ -75,17 +67,17 @@ public class PanelDichVu extends JPanel {
         pnlButtons.add(btnSua);
         pnlButtons.add(btnLamMoi);
 
-        pnlLeft.add(new JLabel("THÔNG TIN DỊCH VỤ NHA KHOA", JLabel.CENTER), BorderLayout.NORTH);
-        pnlLeft.add(pnlForm, BorderLayout.CENTER);
-        pnlLeft.add(pnlButtons, BorderLayout.SOUTH);
+        pnlLeftCard.add(lblFormTitle, BorderLayout.NORTH);
+        pnlLeftCard.add(pnlForm, BorderLayout.CENTER);
+        pnlLeftCard.add(pnlButtons, BorderLayout.SOUTH);
 
-        // RIGHT: Table
-        JPanel pnlRight = new JPanel(new BorderLayout(10, 10));
-        pnlRight.setBackground(Color.WHITE);
-        pnlRight.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        // RIGHT: Table Card
+        JPanel pnlRightCard = UITheme.createCard();
+        pnlRightCard.setLayout(new BorderLayout(0, 12));
+
+        JLabel lblTableTitle = new JLabel("BẢNG GIÁ DỊCH VỤ NIÊM YẾT HIỆN HÀNH");
+        lblTableTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblTableTitle.setForeground(UITheme.TEXT_DARK);
 
         String[] headers = {"Mã DV", "Tên Dịch Vụ Nha Khoa", "Đơn Giá Niêm Yết", "Tình Trạng"};
         modelDichVu = new DefaultTableModel(headers, 0) {
@@ -93,7 +85,8 @@ public class PanelDichVu extends JPanel {
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblDichVu = new JTable(modelDichVu);
-        tblDichVu.setRowHeight(26);
+        UITheme.formatTable(tblDichVu);
+        tblDichVu.getColumnModel().getColumn(3).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
         tblDichVu.getSelectionModel().addListSelectionListener(e -> {
             int row = tblDichVu.getSelectedRow();
@@ -104,14 +97,24 @@ public class PanelDichVu extends JPanel {
             }
         });
 
-        pnlRight.add(new JLabel("BẢNG GIÁ DỊCH VỤ HIỆN HÀNH"), BorderLayout.NORTH);
-        pnlRight.add(new JScrollPane(tblDichVu), BorderLayout.CENTER);
+        pnlRightCard.add(lblTableTitle, BorderLayout.NORTH);
+        pnlRightCard.add(new JScrollPane(tblDichVu), BorderLayout.CENTER);
 
-        add(lblTitle, BorderLayout.NORTH);
-        add(pnlLeft, BorderLayout.WEST);
-        add(pnlRight, BorderLayout.CENTER);
+        add(pnlLeftCard, BorderLayout.WEST);
+        add(pnlRightCard, BorderLayout.CENTER);
 
         taiDuLieu();
+    }
+
+    private JPanel taoFieldInput(String label, JComponent comp) {
+        JPanel p = new JPanel(new BorderLayout(0, 3));
+        p.setOpaque(false);
+        JLabel l = new JLabel(label);
+        l.setFont(UITheme.FONT_BOLD);
+        l.setForeground(UITheme.TEXT_DARK);
+        p.add(l, BorderLayout.NORTH);
+        p.add(comp, BorderLayout.CENTER);
+        return p;
     }
 
     public void taiDuLieu() {

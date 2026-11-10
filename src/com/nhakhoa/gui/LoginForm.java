@@ -2,6 +2,7 @@ package com.nhakhoa.gui;
 
 import com.nhakhoa.bus.TaiKhoanBUS;
 import com.nhakhoa.model.TaiKhoan;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,9 +18,9 @@ public class LoginForm extends JFrame {
     private TaiKhoanBUS taiKhoanBUS = new TaiKhoanBUS();
 
     public LoginForm() {
-        setTitle("ĐĂNG NHẬP HỆ THỐNG - NHA KHOA SÀI GÒN");
+        setTitle("Đăng nhập hệ thống - Nha Khoa Sài Gòn");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(520, 480);
+        setSize(500, 560);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -28,54 +29,63 @@ public class LoginForm extends JFrame {
 
     private void initUI() {
         JPanel pnlRoot = new JPanel(new BorderLayout());
-        pnlRoot.setBackground(Color.WHITE);
+        pnlRoot.setBackground(UITheme.BG_MAIN);
 
-        // TOP HEADER
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setBackground(new Color(25, 42, 86));
-        pnlHeader.setPreferredSize(new Dimension(0, 90));
-        pnlHeader.setBorder(new EmptyBorder(15, 20, 15, 20));
+        // BANNER HEADER
+        JPanel pnlHeader = new JPanel(new BorderLayout(0, 6));
+        pnlHeader.setBackground(UITheme.PRIMARY);
+        pnlHeader.setPreferredSize(new Dimension(0, 110));
+        pnlHeader.setBorder(new EmptyBorder(22, 24, 20, 24));
 
-        JLabel lblTitle = new JLabel("🦷 NHA KHOA SÀI GÒN", JLabel.CENTER);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lblTitle.setForeground(Color.WHITE);
+        JLabel lblLogo = new JLabel("🦷 NHA KHOA SÀI GÒN", JLabel.CENTER);
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblLogo.setForeground(Color.WHITE);
 
-        JLabel lblSub = new JLabel("HỆ THỐNG QUẢN LÝ PHÒNG KHÁM NHA KHOA NỘI BỘ", JLabel.CENTER);
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblSub.setForeground(new Color(220, 230, 242));
+        JLabel lblSub = new JLabel("HỆ THỐNG QUẢN TRỊ NỘI BỘ PHÒNG KHÁM", JLabel.CENTER);
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSub.setForeground(new Color(204, 251, 241));
 
-        pnlHeader.add(lblTitle, BorderLayout.NORTH);
+        pnlHeader.add(lblLogo, BorderLayout.NORTH);
         pnlHeader.add(lblSub, BorderLayout.CENTER);
 
-        // CENTER FORM
-        JPanel pnlCenter = new JPanel(new GridLayout(4, 1, 0, 8));
-        pnlCenter.setOpaque(false);
-        pnlCenter.setBorder(new EmptyBorder(20, 45, 10, 45));
+        // CARD ĐĂNG NHẬP
+        JPanel pnlCenterWrapper = new JPanel(new GridBagLayout());
+        pnlCenterWrapper.setOpaque(false);
+        pnlCenterWrapper.setBorder(new EmptyBorder(15, 25, 10, 25));
+
+        JPanel card = UITheme.createCard();
+        card.setLayout(new GridLayout(5, 1, 0, 10));
+        card.setPreferredSize(new Dimension(430, 260));
 
         txtUsername = new JTextField("admin");
-        txtUsername.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtUsername.setFont(UITheme.FONT_REGULAR);
+        txtUsername.putClientProperty("JTextField.placeholderText", "Nhập tên tài khoản...");
 
         txtPassword = new JPasswordField("123456");
-        txtPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtPassword.setFont(UITheme.FONT_REGULAR);
+        txtPassword.putClientProperty("JTextField.placeholderText", "Nhập mật khẩu...");
 
-        JPanel pnlUser = new JPanel(new BorderLayout(5, 5));
+        JPanel pnlUser = new JPanel(new BorderLayout(4, 4));
         pnlUser.setOpaque(false);
-        pnlUser.add(new JLabel("Tên đăng nhập:"), BorderLayout.NORTH);
+        JLabel lblU = new JLabel("Tên đăng nhập:");
+        lblU.setFont(UITheme.FONT_BOLD);
+        lblU.setForeground(UITheme.TEXT_DARK);
+        pnlUser.add(lblU, BorderLayout.NORTH);
         pnlUser.add(txtUsername, BorderLayout.CENTER);
 
-        JPanel pnlPass = new JPanel(new BorderLayout(5, 5));
+        JPanel pnlPass = new JPanel(new BorderLayout(4, 4));
         pnlPass.setOpaque(false);
-        pnlPass.add(new JLabel("Mật khẩu:"), BorderLayout.NORTH);
+        JLabel lblP = new JLabel("Mật khẩu:");
+        lblP.setFont(UITheme.FONT_BOLD);
+        lblP.setForeground(UITheme.TEXT_DARK);
+        pnlPass.add(lblP, BorderLayout.NORTH);
         pnlPass.add(txtPassword, BorderLayout.CENTER);
 
-        btnLogin = new JButton("ĐĂNG NHẬP VÀO HỆ THỐNG");
-        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        btnLogin.setBackground(new Color(46, 204, 113));
-        btnLogin.setForeground(Color.BLACK);
+        btnLogin = UITheme.createButton("ĐĂNG NHẬP", UITheme.PRIMARY, Color.WHITE);
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnLogin.setPreferredSize(new Dimension(0, 42));
         btnLogin.addActionListener(e -> xuLyDangNhap());
 
-        // Hỗ trợ ấn Enter để đăng nhập
         KeyAdapter enterKey = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -87,46 +97,58 @@ public class LoginForm extends JFrame {
         txtUsername.addKeyListener(enterKey);
         txtPassword.addKeyListener(enterKey);
 
-        pnlCenter.add(pnlUser);
-        pnlCenter.add(pnlPass);
-        pnlCenter.add(new JLabel("")); // khoảng trống
-        pnlCenter.add(btnLogin);
+        card.add(pnlUser);
+        card.add(pnlPass);
+        card.add(new JLabel("")); // Khoảng đệm
+        card.add(btnLogin);
 
-        // BOTTOM: Các nút chọn nhanh tài khoản mẫu (Rất tiện cho chấm đồ án!)
-        JPanel pnlQuick = new JPanel(new BorderLayout(5, 5));
+        pnlCenterWrapper.add(card);
+
+        // BOTTOM: Chọn nhanh tài khoản demo
+        JPanel pnlQuick = new JPanel(new BorderLayout(0, 8));
         pnlQuick.setOpaque(false);
-        pnlQuick.setBorder(new EmptyBorder(10, 30, 20, 30));
+        pnlQuick.setBorder(new EmptyBorder(0, 25, 20, 25));
 
-        JLabel lblQuick = new JLabel("Chọn nhanh tài khoản thử nghiệm:", JLabel.CENTER);
-        lblQuick.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        lblQuick.setForeground(new Color(100, 110, 120));
+        JLabel lblQuickTitle = new JLabel("Chọn nhanh tài khoản kiểm thử đồ án:", JLabel.CENTER);
+        lblQuickTitle.setFont(UITheme.FONT_SMALL);
+        lblQuickTitle.setForeground(UITheme.TEXT_MUTED);
 
         JPanel pnlQuickBtns = new JPanel(new GridLayout(2, 2, 8, 8));
         pnlQuickBtns.setOpaque(false);
 
-        JButton btnAdmin = new JButton("👨‍💼 Quản lý (admin)");
-        JButton btnLeTan = new JButton("👩‍💼 Lễ tân (letan)");
-        JButton btnBacSi = new JButton("👨‍⚕️ Bác sĩ (bacsi)");
-        JButton btnThuKho = new JButton("📦 Thủ kho (thukho)");
-
-        btnAdmin.addActionListener(e -> { txtUsername.setText("admin"); txtPassword.setText("123456"); });
-        btnLeTan.addActionListener(e -> { txtUsername.setText("letan"); txtPassword.setText("123456"); });
-        btnBacSi.addActionListener(e -> { txtUsername.setText("bacsi"); txtPassword.setText("123456"); });
-        btnThuKho.addActionListener(e -> { txtUsername.setText("thukho"); txtPassword.setText("123456"); });
+        JButton btnAdmin = createQuickBtn("👨‍💼 Quản lý (admin)", "admin");
+        JButton btnLeTan = createQuickBtn("👩‍💼 Lễ tân (letan)", "letan");
+        JButton btnBacSi = createQuickBtn("👨‍⚕️ Bác sĩ (bacsi)", "bacsi");
+        JButton btnThuKho = createQuickBtn("📦 Thủ kho (thukho)", "thukho");
 
         pnlQuickBtns.add(btnAdmin);
         pnlQuickBtns.add(btnLeTan);
         pnlQuickBtns.add(btnBacSi);
         pnlQuickBtns.add(btnThuKho);
 
-        pnlQuick.add(lblQuick, BorderLayout.NORTH);
+        pnlQuick.add(lblQuickTitle, BorderLayout.NORTH);
         pnlQuick.add(pnlQuickBtns, BorderLayout.CENTER);
 
         pnlRoot.add(pnlHeader, BorderLayout.NORTH);
-        pnlRoot.add(pnlCenter, BorderLayout.CENTER);
+        pnlRoot.add(pnlCenterWrapper, BorderLayout.CENTER);
         pnlRoot.add(pnlQuick, BorderLayout.SOUTH);
 
         setContentPane(pnlRoot);
+    }
+
+    private JButton createQuickBtn(String text, String user) {
+        JButton btn = new JButton(text);
+        btn.setFont(UITheme.FONT_SMALL);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(UITheme.TEXT_DARK);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.putClientProperty("JButton.buttonType", "roundRect");
+        btn.addActionListener(e -> {
+            txtUsername.setText(user);
+            txtPassword.setText("123456");
+        });
+        return btn;
     }
 
     private void xuLyDangNhap() {

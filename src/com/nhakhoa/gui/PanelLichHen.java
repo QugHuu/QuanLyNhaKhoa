@@ -4,7 +4,7 @@ import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.bus.LichHenBUS;
 import com.nhakhoa.model.BenhNhan;
 import com.nhakhoa.model.LichHen;
-import com.nhakhoa.util.FormatUtil;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -29,29 +29,25 @@ public class PanelLichHen extends JPanel {
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public PanelLichHen() {
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(new Color(245, 247, 250));
+        setLayout(new BorderLayout(18, 0));
+        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setBackground(UITheme.BG_MAIN);
 
-        JLabel lblTitle = new JLabel("QUẢN LÝ LỊCH HẸN & TIẾP NHẬN BỆNH NHÂN (PHÂN HỆ 2)");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(new Color(25, 42, 86));
+        // LEFT: Card Form đặt lịch
+        JPanel pnlLeftCard = UITheme.createCard();
+        pnlLeftCard.setLayout(new BorderLayout(0, 14));
+        pnlLeftCard.setPreferredSize(new Dimension(380, 0));
 
-        // LEFT: Form đặt lịch
-        JPanel pnlLeft = new JPanel(new BorderLayout(10, 10));
-        pnlLeft.setPreferredSize(new Dimension(380, 0));
-        pnlLeft.setBackground(Color.WHITE);
-        pnlLeft.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        JLabel lblFormTitle = new JLabel("ĐẶT LỊCH HẸN & TIẾP ĐÓN");
+        lblFormTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblFormTitle.setForeground(UITheme.TEXT_DARK);
 
-        JPanel pnlForm = new JPanel(new GridLayout(7, 2, 8, 12));
+        JPanel pnlForm = new JPanel(new GridLayout(7, 1, 0, 8));
         pnlForm.setOpaque(false);
 
         txtMaLichHen = new JTextField(lichHenBUS.taoMaLHMoi());
         txtMaLichHen.setEditable(false);
-        txtMaLichHen.setBackground(new Color(240, 240, 240));
+        txtMaLichHen.setBackground(new Color(241, 245, 249));
 
         cboBenhNhan = new JComboBox<>();
         cboBacSi = new JComboBox<>();
@@ -61,35 +57,25 @@ public class PanelLichHen extends JPanel {
         txtGioBatDau = new JTextField("09:00:00");
         txtGioKetThuc = new JTextField("09:45:00");
 
-        pnlForm.add(new JLabel("Mã lịch:"));
-        pnlForm.add(txtMaLichHen);
-        pnlForm.add(new JLabel("Bệnh nhân:"));
-        pnlForm.add(cboBenhNhan);
-        pnlForm.add(new JLabel("Bác sĩ phụ trách:"));
-        pnlForm.add(cboBacSi);
-        pnlForm.add(new JLabel("Ghế điều trị:"));
-        pnlForm.add(cboGhe);
-        pnlForm.add(new JLabel("Ngày hẹn (dd/MM/yyyy):"));
-        pnlForm.add(txtNgayHen);
-        pnlForm.add(new JLabel("Giờ bắt đầu:"));
-        pnlForm.add(txtGioBatDau);
-        pnlForm.add(new JLabel("Giờ kết thúc:"));
-        pnlForm.add(txtGioKetThuc);
+        pnlForm.add(taoFieldInput("Mã lịch hẹn:", txtMaLichHen));
+        pnlForm.add(taoFieldInput("Bệnh nhân đặt khám:", cboBenhNhan));
+        pnlForm.add(taoFieldInput("Bác sĩ phụ trách:", cboBacSi));
+        pnlForm.add(taoFieldInput("Ghế & Phòng điều trị:", cboGhe));
+        pnlForm.add(taoFieldInput("Ngày hẹn (dd/MM/yyyy):", txtNgayHen));
+        pnlForm.add(taoFieldInput("Giờ bắt đầu:", txtGioBatDau));
+        pnlForm.add(taoFieldInput("Giờ kết thúc:", txtGioKetThuc));
 
         // Buttons
-        JPanel pnlButtons = new JPanel(new GridLayout(3, 1, 8, 8));
+        JPanel pnlButtons = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlButtons.setOpaque(false);
 
-        JButton btnDatLich = new JButton("📅 Đặt lịch hẹn mới");
-        JButton btnDaDen = new JButton("✅ Bệnh nhân đã đến phòng khám");
-        JButton btnHuy = new JButton("❌ Hủy lịch hẹn này");
-
-        btnDatLich.setBackground(new Color(46, 204, 113));
-        btnDatLich.setForeground(Color.BLACK);
-        btnDaDen.setBackground(new Color(52, 152, 219));
-        btnDaDen.setForeground(Color.BLACK);
-        btnHuy.setBackground(new Color(231, 76, 60));
-        btnHuy.setForeground(Color.BLACK);
+        JButton btnDatLich = UITheme.createButton("📅  Đặt lịch hẹn mới", UITheme.PRIMARY, Color.WHITE);
+        JButton btnDaDen = UITheme.createButton("✅  Bệnh nhân đã đến phòng khám", UITheme.INFO, Color.WHITE);
+        JButton btnHuy = UITheme.createButton("❌  Hủy lịch hẹn đã chọn", Color.WHITE, UITheme.DANGER);
+        btnHuy.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(254, 202, 202), 1, true),
+                new EmptyBorder(8, 12, 8, 12)
+        ));
 
         btnDatLich.addActionListener(e -> xuLyDatLich());
         btnDaDen.addActionListener(e -> xuLyBenhNhanDaDen());
@@ -99,36 +85,46 @@ public class PanelLichHen extends JPanel {
         pnlButtons.add(btnDaDen);
         pnlButtons.add(btnHuy);
 
-        pnlLeft.add(new JLabel("THÔNG TIN LỊCH HẸN", JLabel.CENTER), BorderLayout.NORTH);
-        pnlLeft.add(pnlForm, BorderLayout.CENTER);
-        pnlLeft.add(pnlButtons, BorderLayout.SOUTH);
+        pnlLeftCard.add(lblFormTitle, BorderLayout.NORTH);
+        pnlLeftCard.add(pnlForm, BorderLayout.CENTER);
+        pnlLeftCard.add(pnlButtons, BorderLayout.SOUTH);
 
-        // RIGHT: Danh sách lịch hẹn
-        JPanel pnlRight = new JPanel(new BorderLayout(10, 10));
-        pnlRight.setBackground(Color.WHITE);
-        pnlRight.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        // RIGHT: Card Danh sách lịch hẹn
+        JPanel pnlRightCard = UITheme.createCard();
+        pnlRightCard.setLayout(new BorderLayout(0, 12));
 
-        String[] headers = {"Mã Lịch", "Bệnh Nhân", "Bác Sĩ", "Ghế", "Ngày Hẹn", "Giờ Bắt Đầu", "Giờ Kết Thúc", "Trạng Thái"};
+        JLabel lblTableTitle = new JLabel("DANH SÁCH LỊCH HẸN TRÊN TOÀN HỆ THỐNG");
+        lblTableTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblTableTitle.setForeground(UITheme.TEXT_DARK);
+
+        String[] headers = {"Mã Lịch", "Bệnh Nhân", "Bác Sĩ", "Ghế Điều Trị", "Ngày Hẹn", "Bắt Đầu", "Kết Thúc", "Trạng Thái"};
         modelLichHen = new DefaultTableModel(headers, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
         tblLichHen = new JTable(modelLichHen);
-        tblLichHen.setRowHeight(26);
-        tblLichHen.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        UITheme.formatTable(tblLichHen);
+        tblLichHen.getColumnModel().getColumn(7).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
-        pnlRight.add(new JLabel("DANH SÁCH TOÀN BỘ LỊCH HẸN"), BorderLayout.NORTH);
-        pnlRight.add(new JScrollPane(tblLichHen), BorderLayout.CENTER);
+        pnlRightCard.add(lblTableTitle, BorderLayout.NORTH);
+        pnlRightCard.add(new JScrollPane(tblLichHen), BorderLayout.CENTER);
 
-        add(lblTitle, BorderLayout.NORTH);
-        add(pnlLeft, BorderLayout.WEST);
-        add(pnlRight, BorderLayout.CENTER);
+        add(pnlLeftCard, BorderLayout.WEST);
+        add(pnlRightCard, BorderLayout.CENTER);
 
         loadComboboxData();
         taiDuLieu();
+    }
+
+    private JPanel taoFieldInput(String label, JComponent comp) {
+        JPanel p = new JPanel(new BorderLayout(0, 3));
+        p.setOpaque(false);
+        JLabel l = new JLabel(label);
+        l.setFont(UITheme.FONT_BOLD);
+        l.setForeground(UITheme.TEXT_DARK);
+        p.add(l, BorderLayout.NORTH);
+        p.add(comp, BorderLayout.CENTER);
+        return p;
     }
 
     private void loadComboboxData() {
@@ -141,13 +137,13 @@ public class PanelLichHen extends JPanel {
         cboBacSi.removeAllItems();
         listBS = lichHenBUS.getDanhSachBacSi();
         for (String[] bs : listBS) {
-            cboBacSi.addItem(bs[1]); // Hiển thị tên BS
+            cboBacSi.addItem(bs[1]);
         }
 
         cboGhe.removeAllItems();
         listGhe = lichHenBUS.getDanhSachGhe();
         for (String[] g : listGhe) {
-            cboGhe.addItem(g[1]); // Hiển thị tên Ghế
+            cboGhe.addItem(g[1]);
         }
     }
 
@@ -204,7 +200,7 @@ public class PanelLichHen extends JPanel {
             taiDuLieu();
             txtMaLichHen.setText(lichHenBUS.taoMaLHMoi());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi đặt lịch", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi đặt lịch (RB07)", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -216,9 +212,8 @@ public class PanelLichHen extends JPanel {
         }
         String maLich = modelLichHen.getValueAt(row, 0).toString();
         try {
-            // RB08: Cập nhật trạng thái DA_DEN để Bác sĩ có thể tiếp nhận khám
             lichHenBUS.doiTrangThai(maLich, "DA_DEN");
-            JOptionPane.showMessageDialog(this, "Bệnh nhân " + maLich + " đã đến! Hồ sơ chuyển sang hàng chờ khám của Bác sĩ.", "Tiếp nhận thành công", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Bệnh nhân " + maLich + " đã đến! Hồ sơ chuyển sang hàng chờ khám của Bác sĩ (RB08).", "Tiếp nhận thành công", JOptionPane.INFORMATION_MESSAGE);
             taiDuLieu();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);

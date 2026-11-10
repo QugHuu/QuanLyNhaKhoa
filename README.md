@@ -105,3 +105,4 @@ Mật khẩu mặc định của tất cả tài khoản mẫu là: `123456`
 | **RB08** | Tiếp nhận khám: Chỉ cho phép tạo phiếu khám khi lịch hẹn chuyển sang trạng thái `DA_DEN` | `LichHenBUS.doiTrangThai()`, `PanelKhamBenh.java` (lọc hàng đợi) |
 | **RB11, RB12** | Quản lý kho theo nguyên tắc **FEFO (First Expired, First Out)**: ưu tiên xuất các lô có `HanSuDung` nhỏ nhất còn khả dụng | `KhoDAO.getAllLoVatTu()` (`ORDER BY HanSuDung ASC`), `KhoDAO.xuatKhoFEFO()` |
 | **RB14, RB15** | Điều kiện lập hóa đơn, thanh toán nhiều đợt và tự động tạo `HO_SO_CONG_NO` nếu trả thiếu | `HoaDonDAO.lapHoaDonVaThanhToan()`, `PanelHoaDon.java` |
+

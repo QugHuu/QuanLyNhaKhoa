@@ -6,6 +6,7 @@ import com.nhakhoa.model.BenhNhan;
 import com.nhakhoa.model.HoSoCongNo;
 import com.nhakhoa.model.HoaDon;
 import com.nhakhoa.util.FormatUtil;
+import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -26,24 +27,20 @@ public class PanelHoaDon extends JPanel {
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
     public PanelHoaDon() {
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
-        setBackground(new Color(245, 247, 250));
+        setLayout(new BorderLayout(18, 0));
+        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setBackground(UITheme.BG_MAIN);
 
-        JLabel lblTitle = new JLabel("THANH TOÁN & QUẢN LÝ CÔNG NỢ TRẢ GÓP (PHÂN HỆ 3)");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lblTitle.setForeground(new Color(25, 42, 86));
+        // LEFT: Card Lập hóa đơn
+        JPanel pnlLeftCard = UITheme.createCard();
+        pnlLeftCard.setLayout(new BorderLayout(0, 14));
+        pnlLeftCard.setPreferredSize(new Dimension(380, 0));
 
-        // LEFT: Lập hóa đơn mới
-        JPanel pnlLeft = new JPanel(new BorderLayout(10, 10));
-        pnlLeft.setPreferredSize(new Dimension(380, 0));
-        pnlLeft.setBackground(Color.WHITE);
-        pnlLeft.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
+        JLabel lblFormTitle = new JLabel("LẬP HÓA ĐƠN & THU TIỀN");
+        lblFormTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblFormTitle.setForeground(UITheme.TEXT_DARK);
 
-        JPanel pnlForm = new JPanel(new GridLayout(6, 2, 8, 12));
+        JPanel pnlForm = new JPanel(new GridLayout(5, 1, 0, 8));
         pnlForm.setOpaque(false);
 
         cboBenhNhan = new JComboBox<>();
@@ -52,83 +49,87 @@ public class PanelHoaDon extends JPanel {
         txtThanhToanNgay = new JTextField("600000");
         cboPhuongThuc = new JComboBox<>(new String[]{"TIEN_MAT", "CHUYEN_KHOAN"});
 
-        pnlForm.add(new JLabel("Bệnh nhân:"));
-        pnlForm.add(cboBenhNhan);
-        pnlForm.add(new JLabel("Tổng tiền dịch vụ:"));
-        pnlForm.add(txtTongTien);
-        pnlForm.add(new JLabel("Tiền giảm giá:"));
-        pnlForm.add(txtGiamGia);
-        pnlForm.add(new JLabel("Khách thanh toán ngay:"));
-        pnlForm.add(txtThanhToanNgay);
-        pnlForm.add(new JLabel("Hình thức thanh toán:"));
-        pnlForm.add(cboPhuongThuc);
+        pnlForm.add(taoFieldInput("Bệnh nhân thanh toán:", cboBenhNhan));
+        pnlForm.add(taoFieldInput("Tổng tiền dịch vụ (VNĐ):", txtTongTien));
+        pnlForm.add(taoFieldInput("Tiền giảm giá / Khuyến mãi:", txtGiamGia));
+        pnlForm.add(taoFieldInput("Khách thanh toán đợt này:", txtThanhToanNgay));
+        pnlForm.add(taoFieldInput("Hình thức thanh toán:", cboPhuongThuc));
 
-        JButton btnLapHD = new JButton("💳 LẬP HÓA ĐƠN & THU TIỀN");
-        btnLapHD.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnLapHD.setBackground(new Color(46, 204, 113));
-        btnLapHD.setForeground(Color.BLACK);
+        JButton btnLapHD = UITheme.createButton("💳  LẬP HÓA ĐƠN & THU TIỀN", UITheme.PRIMARY, Color.WHITE);
         btnLapHD.setPreferredSize(new Dimension(0, 42));
         btnLapHD.addActionListener(e -> xuLyLapHoaDon());
 
-        JLabel lblNote = new JLabel("<html><i>* Lưu ý: Nếu khách thanh toán chưa đủ, hệ thống tự động ghi nhận vào Sổ Công Nợ (RB15).</i></html>");
-        lblNote.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblNote.setForeground(new Color(120, 130, 140));
+        JLabel lblNote = new JLabel("<html><i style='color:#64748b;'>* Nếu bệnh nhân trả thiếu, phần còn lại sẽ tự động ghi vào Sổ Công Nợ Trả Góp (RB15).</i></html>");
 
         JPanel pnlLeftBottom = new JPanel(new BorderLayout(0, 8));
         pnlLeftBottom.setOpaque(false);
-        pnlLeftBottom.add(btnLapHD, BorderLayout.CENTER);
-        pnlLeftBottom.add(lblNote, BorderLayout.SOUTH);
+        pnlLeftBottom.add(btnLapHD, BorderLayout.NORTH);
+        pnlLeftBottom.add(lblNote, BorderLayout.CENTER);
 
-        pnlLeft.add(new JLabel("TẠO HÓA ĐƠN TÀI CHÍNH", JLabel.CENTER), BorderLayout.NORTH);
-        pnlLeft.add(pnlForm, BorderLayout.CENTER);
-        pnlLeft.add(pnlLeftBottom, BorderLayout.SOUTH);
+        pnlLeftCard.add(lblFormTitle, BorderLayout.NORTH);
+        pnlLeftCard.add(pnlForm, BorderLayout.CENTER);
+        pnlLeftCard.add(pnlLeftBottom, BorderLayout.SOUTH);
 
-        // RIGHT: Gồm 2 tab: Tab 1 Danh sách Hóa đơn, Tab 2 Sổ công nợ
+        // RIGHT: Card Tabs (Hóa đơn & Sổ nợ)
+        JPanel pnlRightCard = UITheme.createCard();
+        pnlRightCard.setLayout(new BorderLayout());
+
         JTabbedPane tabRight = new JTabbedPane();
 
         // TAB 1: HÓA ĐƠN
-        JPanel pnlTabHD = new JPanel(new BorderLayout(5, 5));
-        pnlTabHD.setBackground(Color.WHITE);
-        String[] headersHD = {"Mã HĐ", "Bệnh Nhân", "Ngày Lập", "Tổng Tiền", "Giảm Giá", "Phải Trả", "Trạng Thái"};
+        JPanel pnlTabHD = new JPanel(new BorderLayout(0, 10));
+        pnlTabHD.setOpaque(false);
+        String[] headersHD = {"Mã HĐ", "Bệnh Nhân", "Ngày Lập", "Tổng Tiền", "Giảm Giá", "Cần Trả", "Trạng Thái"};
         modelHoaDon = new DefaultTableModel(headersHD, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblHoaDon = new JTable(modelHoaDon);
-        tblHoaDon.setRowHeight(25);
+        UITheme.formatTable(tblHoaDon);
+        tblHoaDon.getColumnModel().getColumn(6).setCellRenderer(new UITheme.StatusBadgeRenderer());
         pnlTabHD.add(new JScrollPane(tblHoaDon), BorderLayout.CENTER);
 
         // TAB 2: CÔNG NỢ
-        JPanel pnlTabCN = new JPanel(new BorderLayout(8, 8));
-        pnlTabCN.setBackground(Color.WHITE);
-        pnlTabCN.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel pnlTabCN = new JPanel(new BorderLayout(0, 10));
+        pnlTabCN.setOpaque(false);
 
-        String[] headersCN = {"Mã Công Nợ", "Mã Hóa Đơn", "Bệnh Nhân", "Nợ Ban Đầu", "Dư Nợ Còn Lại", "Trạng Thái"};
+        String[] headersCN = {"Mã Công Nợ", "Mã Hóa Đơn", "Bệnh Nhân", "Tổng Nợ Ban Đầu", "Dư Nợ Còn Lại", "Trạng Thái"};
         modelCongNo = new DefaultTableModel(headersCN, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblCongNo = new JTable(modelCongNo);
-        tblCongNo.setRowHeight(25);
+        UITheme.formatTable(tblCongNo);
+        tblCongNo.getColumnModel().getColumn(5).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
-        JButton btnThuNo = new JButton("💵 Thu nợ tiếp theo cho hồ sơ được chọn");
-        btnThuNo.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnThuNo.setBackground(new Color(52, 152, 219));
-        btnThuNo.setForeground(Color.BLACK);
+        JButton btnThuNo = UITheme.createButton("💵  Thu tiền đợt tiếp theo cho hồ sơ nợ đã chọn", UITheme.INFO, Color.WHITE);
+        btnThuNo.setPreferredSize(new Dimension(0, 38));
         btnThuNo.addActionListener(e -> xuLyThuNo());
 
         pnlTabCN.add(new JScrollPane(tblCongNo), BorderLayout.CENTER);
         pnlTabCN.add(btnThuNo, BorderLayout.SOUTH);
 
-        tabRight.addTab("📋 Danh Sách Hóa Đơn", pnlTabHD);
-        tabRight.addTab("📖 Sổ Theo Dõi Công Nợ Trả Góp (RB15)", pnlTabCN);
+        tabRight.addTab("📋  Danh Sách Hóa Đơn", pnlTabHD);
+        tabRight.addTab("📖  Sổ Theo Dõi Công Nợ Trả Góp (RB15)", pnlTabCN);
 
-        add(lblTitle, BorderLayout.NORTH);
-        add(pnlLeft, BorderLayout.WEST);
-        add(tabRight, BorderLayout.CENTER);
+        pnlRightCard.add(tabRight, BorderLayout.CENTER);
+
+        add(pnlLeftCard, BorderLayout.WEST);
+        add(pnlRightCard, BorderLayout.CENTER);
 
         taiBenhNhan();
         taiDuLieu();
+    }
+
+    private JPanel taoFieldInput(String label, JComponent comp) {
+        JPanel p = new JPanel(new BorderLayout(0, 3));
+        p.setOpaque(false);
+        JLabel l = new JLabel(label);
+        l.setFont(UITheme.FONT_BOLD);
+        l.setForeground(UITheme.TEXT_DARK);
+        p.add(l, BorderLayout.NORTH);
+        p.add(comp, BorderLayout.CENTER);
+        return p;
     }
 
     private void taiBenhNhan() {
@@ -140,7 +141,6 @@ public class PanelHoaDon extends JPanel {
     }
 
     public void taiDuLieu() {
-        // Tải hóa đơn
         modelHoaDon.setRowCount(0);
         List<HoaDon> listHD = hoaDonDAO.getAll();
         for (HoaDon hd : listHD) {
@@ -155,7 +155,6 @@ public class PanelHoaDon extends JPanel {
             });
         }
 
-        // Tải công nợ
         modelCongNo.setRowCount(0);
         List<HoSoCongNo> listCN = hoaDonDAO.getAllCongNo();
         for (HoSoCongNo cn : listCN) {
