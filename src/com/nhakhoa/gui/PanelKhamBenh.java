@@ -42,7 +42,7 @@ public class PanelKhamBenh extends JPanel {
         pnlTopCard.setLayout(new GridLayout(3, 2, 16, 8));
 
         cboBenhNhanCho = new JComboBox<>();
-        JButton btnReloadQueue = UITheme.createButton("🔄 Tải hàng đợi", Color.WHITE, UITheme.TEXT_DARK);
+        JButton btnReloadQueue = UITheme.createButton("Tải hàng đợi", Color.WHITE, UITheme.TEXT_DARK);
         btnReloadQueue.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
                 new EmptyBorder(6, 12, 6, 12)
@@ -86,7 +86,7 @@ public class PanelKhamBenh extends JPanel {
         pnlDVInput.add(new JLabel("Số lượng:"));
         pnlDVInput.add(spSoLuongDV);
 
-        JButton btnThemDV = UITheme.createButton("➕ Thêm dịch vụ", UITheme.PRIMARY, Color.WHITE);
+        JButton btnThemDV = UITheme.createButton("Thêm dịch vụ", UITheme.PRIMARY, Color.WHITE);
         btnThemDV.addActionListener(e -> xuLyThemDV());
 
         JPanel pnlDVTop = new JPanel(new BorderLayout(0, 8));
@@ -130,7 +130,7 @@ public class PanelKhamBenh extends JPanel {
         pnlThuocInput.add(new JLabel("Liều dùng:"));
         pnlThuocInput.add(txtLieuDung);
 
-        JButton btnThemThuoc = UITheme.createButton("➕ Thêm vào đơn", new Color(139, 92, 246), Color.WHITE);
+        JButton btnThemThuoc = UITheme.createButton("Thêm vào đơn", new Color(139, 92, 246), Color.WHITE);
         btnThemThuoc.addActionListener(e -> xuLyThemThuoc());
 
         JPanel pnlThuocTop = new JPanel(new BorderLayout(0, 8));
@@ -165,7 +165,7 @@ public class PanelKhamBenh extends JPanel {
         pnlLoiDan.add(lblLD, BorderLayout.WEST);
         pnlLoiDan.add(txtLoiDan, BorderLayout.CENTER);
 
-        JButton btnLuuCaKham = UITheme.createButton("💾  HOÀN TẤT CA KHÁM & TỰ ĐỘNG XUẤT KHO VẬT TƯ (FEFO - RB12)", UITheme.SUCCESS, Color.WHITE);
+        JButton btnLuuCaKham = UITheme.createButton("HOÀN TẤT CA KHÁM & TỰ ĐỘNG XUẤT KHO VẬT TƯ (FEFO - RB12)", UITheme.SUCCESS, Color.WHITE);
         btnLuuCaKham.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnLuuCaKham.setPreferredSize(new Dimension(0, 44));
         btnLuuCaKham.addActionListener(e -> xuLyLuuCaKham());

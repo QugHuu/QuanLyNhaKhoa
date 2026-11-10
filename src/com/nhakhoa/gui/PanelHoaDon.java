@@ -55,7 +55,7 @@ public class PanelHoaDon extends JPanel {
         pnlForm.add(taoFieldInput("Khách thanh toán đợt này:", txtThanhToanNgay));
         pnlForm.add(taoFieldInput("Hình thức thanh toán:", cboPhuongThuc));
 
-        JButton btnLapHD = UITheme.createButton("💳  LẬP HÓA ĐƠN & THU TIỀN", UITheme.PRIMARY, Color.WHITE);
+        JButton btnLapHD = UITheme.createButton("LẬP HÓA ĐƠN & THU TIỀN", UITheme.PRIMARY, Color.WHITE);
         btnLapHD.setPreferredSize(new Dimension(0, 42));
         btnLapHD.addActionListener(e -> xuLyLapHoaDon());
 
@@ -102,15 +102,15 @@ public class PanelHoaDon extends JPanel {
         UITheme.formatTable(tblCongNo);
         tblCongNo.getColumnModel().getColumn(5).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
-        JButton btnThuNo = UITheme.createButton("💵  Thu tiền đợt tiếp theo cho hồ sơ nợ đã chọn", UITheme.INFO, Color.WHITE);
+        JButton btnThuNo = UITheme.createButton("Thu tiền đợt tiếp theo cho hồ sơ nợ đã chọn", UITheme.INFO, Color.WHITE);
         btnThuNo.setPreferredSize(new Dimension(0, 38));
         btnThuNo.addActionListener(e -> xuLyThuNo());
 
         pnlTabCN.add(new JScrollPane(tblCongNo), BorderLayout.CENTER);
         pnlTabCN.add(btnThuNo, BorderLayout.SOUTH);
 
-        tabRight.addTab("📋  Danh Sách Hóa Đơn", pnlTabHD);
-        tabRight.addTab("📖  Sổ Theo Dõi Công Nợ Trả Góp (RB15)", pnlTabCN);
+        tabRight.addTab("Danh Sách Hóa Đơn", pnlTabHD);
+        tabRight.addTab("Sổ Theo Dõi Công Nợ Trả Góp (RB15)", pnlTabCN);
 
         pnlRightCard.add(tabRight, BorderLayout.CENTER);
 

@@ -31,4 +31,16 @@ public class FormatUtil {
         if (date == null) return "";
         return DB_DATE_FORMAT.format(date);
     }
+
+    /**
+     * Rút gọn chuỗi giờ SQL Server (ví dụ: '08:30:00.0000000' -> '08:30')
+     */
+    public static String formatShortTime(String timeStr) {
+        if (timeStr == null || timeStr.trim().isEmpty()) return "";
+        String t = timeStr.trim();
+        if (t.length() >= 5) {
+            return t.substring(0, 5); // '08:30'
+        }
+        return t;
+    }
 }

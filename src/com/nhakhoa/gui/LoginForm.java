@@ -20,7 +20,7 @@ public class LoginForm extends JFrame {
     public LoginForm() {
         setTitle("Đăng nhập hệ thống - Nha Khoa Sài Gòn");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 560);
+        setSize(480, 540);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -34,11 +34,11 @@ public class LoginForm extends JFrame {
         // BANNER HEADER
         JPanel pnlHeader = new JPanel(new BorderLayout(0, 6));
         pnlHeader.setBackground(UITheme.PRIMARY);
-        pnlHeader.setPreferredSize(new Dimension(0, 110));
-        pnlHeader.setBorder(new EmptyBorder(22, 24, 20, 24));
+        pnlHeader.setPreferredSize(new Dimension(0, 100));
+        pnlHeader.setBorder(new EmptyBorder(20, 24, 18, 24));
 
-        JLabel lblLogo = new JLabel("🦷 NHA KHOA SÀI GÒN", JLabel.CENTER);
-        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        JLabel lblLogo = new JLabel("NHA KHOA SÀI GÒN", JLabel.CENTER);
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblLogo.setForeground(Color.WHITE);
 
         JLabel lblSub = new JLabel("HỆ THỐNG QUẢN TRỊ NỘI BỘ PHÒNG KHÁM", JLabel.CENTER);
@@ -55,7 +55,7 @@ public class LoginForm extends JFrame {
 
         JPanel card = UITheme.createCard();
         card.setLayout(new GridLayout(5, 1, 0, 10));
-        card.setPreferredSize(new Dimension(430, 260));
+        card.setPreferredSize(new Dimension(420, 250));
 
         txtUsername = new JTextField("admin");
         txtUsername.setFont(UITheme.FONT_REGULAR);
@@ -99,7 +99,7 @@ public class LoginForm extends JFrame {
 
         card.add(pnlUser);
         card.add(pnlPass);
-        card.add(new JLabel("")); // Khoảng đệm
+        card.add(new JLabel(""));
         card.add(btnLogin);
 
         pnlCenterWrapper.add(card);
@@ -116,10 +116,10 @@ public class LoginForm extends JFrame {
         JPanel pnlQuickBtns = new JPanel(new GridLayout(2, 2, 8, 8));
         pnlQuickBtns.setOpaque(false);
 
-        JButton btnAdmin = createQuickBtn("👨‍💼 Quản lý (admin)", "admin");
-        JButton btnLeTan = createQuickBtn("👩‍💼 Lễ tân (letan)", "letan");
-        JButton btnBacSi = createQuickBtn("👨‍⚕️ Bác sĩ (bacsi)", "bacsi");
-        JButton btnThuKho = createQuickBtn("📦 Thủ kho (thukho)", "thukho");
+        JButton btnAdmin = createQuickBtn("Quản lý (admin)", "admin");
+        JButton btnLeTan = createQuickBtn("Lễ tân (letan)", "letan");
+        JButton btnBacSi = createQuickBtn("Bác sĩ (bacsi)", "bacsi");
+        JButton btnThuKho = createQuickBtn("Thủ kho (thukho)", "thukho");
 
         pnlQuickBtns.add(btnAdmin);
         pnlQuickBtns.add(btnLeTan);

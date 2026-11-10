@@ -4,6 +4,7 @@ import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.bus.LichHenBUS;
 import com.nhakhoa.model.BenhNhan;
 import com.nhakhoa.model.LichHen;
+import com.nhakhoa.util.FormatUtil;
 import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
@@ -54,24 +55,24 @@ public class PanelLichHen extends JPanel {
         cboGhe = new JComboBox<>();
 
         txtNgayHen = new JTextField(sdf.format(new Date()));
-        txtGioBatDau = new JTextField("09:00:00");
-        txtGioKetThuc = new JTextField("09:45:00");
+        txtGioBatDau = new JTextField("09:00");
+        txtGioKetThuc = new JTextField("09:45");
 
         pnlForm.add(taoFieldInput("Mã lịch hẹn:", txtMaLichHen));
         pnlForm.add(taoFieldInput("Bệnh nhân đặt khám:", cboBenhNhan));
         pnlForm.add(taoFieldInput("Bác sĩ phụ trách:", cboBacSi));
         pnlForm.add(taoFieldInput("Ghế & Phòng điều trị:", cboGhe));
         pnlForm.add(taoFieldInput("Ngày hẹn (dd/MM/yyyy):", txtNgayHen));
-        pnlForm.add(taoFieldInput("Giờ bắt đầu:", txtGioBatDau));
-        pnlForm.add(taoFieldInput("Giờ kết thúc:", txtGioKetThuc));
+        pnlForm.add(taoFieldInput("Giờ bắt đầu (HH:mm):", txtGioBatDau));
+        pnlForm.add(taoFieldInput("Giờ kết thúc (HH:mm):", txtGioKetThuc));
 
         // Buttons
         JPanel pnlButtons = new JPanel(new GridLayout(3, 1, 0, 8));
         pnlButtons.setOpaque(false);
 
-        JButton btnDatLich = UITheme.createButton("📅  Đặt lịch hẹn mới", UITheme.PRIMARY, Color.WHITE);
-        JButton btnDaDen = UITheme.createButton("✅  Bệnh nhân đã đến phòng khám", UITheme.INFO, Color.WHITE);
-        JButton btnHuy = UITheme.createButton("❌  Hủy lịch hẹn đã chọn", Color.WHITE, UITheme.DANGER);
+        JButton btnDatLich = UITheme.createButton("Đặt lịch hẹn mới", UITheme.PRIMARY, Color.WHITE);
+        JButton btnDaDen = UITheme.createButton("Bệnh nhân đã đến phòng khám", UITheme.INFO, Color.WHITE);
+        JButton btnHuy = UITheme.createButton("Hủy lịch hẹn đã chọn", Color.WHITE, UITheme.DANGER);
         btnHuy.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(254, 202, 202), 1, true),
                 new EmptyBorder(8, 12, 8, 12)
@@ -157,8 +158,8 @@ public class PanelLichHen extends JPanel {
                     lh.getTenBS(),
                     lh.getMaGhe(),
                     sdf.format(lh.getNgayHen()),
-                    lh.getGioBatDau(),
-                    lh.getGioKetThuc(),
+                    FormatUtil.formatShortTime(lh.getGioBatDau()),
+                    FormatUtil.formatShortTime(lh.getGioKetThuc()),
                     lh.getTinhTrang()
             });
         }

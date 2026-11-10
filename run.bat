@@ -1,6 +1,5 @@
 @echo off
-chcp 65001 >nul
-title QUẢN LÝ PHÒNG KHÁM NHA KHOA - SÀI GÒN DENTAL
+title Quan Ly Phong Kham Nha Khoa - Sai Gon Dental
 echo ============================================================
 echo   CHUONG TRINH QUAN LY PHONG KHAM NHA KHOA - SAI GON DENTAL
 echo ============================================================
@@ -10,7 +9,7 @@ cd /d "%~dp0"
 if not exist bin mkdir bin
 
 dir /s /b src\*.java > sources.txt
-javac -encoding UTF-8 -cp "lib\mssql-jdbc.jar;lib\*" -d bin @sources.txt
+javac -encoding UTF-8 -cp "lib\mssql-jdbc.jar;lib\flatlaf.jar;lib\*" -d bin @sources.txt
 
 if %ERRORLEVEL% NEQ 0 (
     echo [LOI] Bien dich that bai! Vui long kiem tra JDK hoac thu vien.
@@ -19,6 +18,6 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo [2/2] Bien dich thanh cong! Dang khoi chay chuong trinh...
-start "" javaw -cp "bin;lib\mssql-jdbc.jar;lib\*" "-Djava.library.path=lib" com.nhakhoa.App
+start "" javaw -cp "bin;lib\mssql-jdbc.jar;lib\flatlaf.jar;lib\*" "-Djava.library.path=lib" com.nhakhoa.App
 echo Da mo ung dung thanh cong!
 exit /b 0

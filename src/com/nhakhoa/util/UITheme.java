@@ -7,6 +7,7 @@ import java.awt.*;
 
 /**
  * Tiện ích giao diện: Bảng màu, Font chữ và Renderers hiện đại
+ * Sử dụng ký tự chữ chuẩn, tương thích 100% font chữ Windows, không bị lỗi ô vuông []
  */
 public class UITheme {
     // Bảng màu hiện đại (Modern Medical Clinic Theme)
@@ -24,9 +25,9 @@ public class UITheme {
     public static final Color DANGER = new Color(239, 68, 68);         // Đỏ lỗi / xóa
     public static final Color INFO = new Color(14, 165, 233);          // Xanh dương thông tin
 
-    // Fonts chuẩn Segoe UI rõ ràng
-    public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
-    public static final Font FONT_SUBTITLE = new Font("Segoe UI", Font.BOLD, 15);
+    // Fonts chuẩn Segoe UI của Windows, hiển thị tiếng Việt hoàn hảo
+    public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 18);
+    public static final Font FONT_SUBTITLE = new Font("Segoe UI", Font.BOLD, 14);
     public static final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 13);
     public static final Font FONT_REGULAR = new Font("Segoe UI", Font.PLAIN, 13);
     public static final Font FONT_SMALL = new Font("Segoe UI", Font.PLAIN, 12);
@@ -91,7 +92,7 @@ public class UITheme {
                 case "DA_KHAM":
                     lbl.setBackground(new Color(209, 250, 229));
                     lbl.setForeground(new Color(6, 95, 70));
-                    lbl.setText("  ✔ " + val + "  ");
+                    lbl.setText(" " + val + " ");
                     break;
 
                 case "CHO_KHAM":
@@ -103,13 +104,13 @@ public class UITheme {
                 case "DANG_TRUC":
                     lbl.setBackground(new Color(254, 243, 199));
                     lbl.setForeground(new Color(146, 64, 14));
-                    lbl.setText("  ⏳ " + val + "  ");
+                    lbl.setText(" " + val + " ");
                     break;
 
                 case "DA_DEN":
                     lbl.setBackground(new Color(224, 242, 254));
                     lbl.setForeground(new Color(3, 105, 161));
-                    lbl.setText("  👤 ĐÃ ĐẾN  ");
+                    lbl.setText(" ĐÃ ĐẾN ");
                     break;
 
                 case "TAM_KHOA":
@@ -121,7 +122,7 @@ public class UITheme {
                 case "NGHI_VIEC":
                     lbl.setBackground(new Color(254, 226, 226));
                     lbl.setForeground(new Color(153, 27, 27));
-                    lbl.setText("  ✖ " + val + "  ");
+                    lbl.setText(" " + val + " ");
                     break;
 
                 default:

@@ -37,10 +37,10 @@ public class PanelTongQuan extends JPanel {
         lblLichHen = new JLabel("0");
         lblKhoCanhBao = new JLabel("0");
 
-        pnlKPI.add(taoTheKPI("TỔNG DOANH THU", lblDoanhThu, UITheme.SUCCESS, "💰", "Thực thu toàn phòng khám"));
-        pnlKPI.add(taoTheKPI("HỒ SƠ BỆNH NHÂN", lblBenhNhan, UITheme.INFO, "👥", "Đang quản lý điều trị"));
-        pnlKPI.add(taoTheKPI("LỊCH HẸN HÔM NAY", lblLichHen, new Color(139, 92, 246), "📅", "Số lượt đặt khám"));
-        pnlKPI.add(taoTheKPI("CẢNH BÁO KHO FEFO", lblKhoCanhBao, UITheme.DANGER, "⚠️", "Cận hạn / Dưới định mức"));
+        pnlKPI.add(taoTheKPI("TỔNG DOANH THU", lblDoanhThu, UITheme.SUCCESS, "Thực thu toàn phòng khám"));
+        pnlKPI.add(taoTheKPI("HỒ SƠ BỆNH NHÂN", lblBenhNhan, UITheme.INFO, "Đang quản lý điều trị"));
+        pnlKPI.add(taoTheKPI("LỊCH HẸN HÔM NAY", lblLichHen, new Color(139, 92, 246), "Số lượt đặt khám"));
+        pnlKPI.add(taoTheKPI("CẢNH BÁO KHO (FEFO)", lblKhoCanhBao, UITheme.DANGER, "Cận hạn / Dưới định mức"));
 
         // CENTER: Bảng danh sách lịch hẹn hôm nay
         JPanel pnlTableCard = UITheme.createCard();
@@ -53,10 +53,10 @@ public class PanelTongQuan extends JPanel {
         lblSub.setFont(UITheme.FONT_SUBTITLE);
         lblSub.setForeground(UITheme.TEXT_DARK);
 
-        JButton btnReload = UITheme.createButton("🔄  Làm mới số liệu", Color.WHITE, UITheme.TEXT_DARK);
+        JButton btnReload = UITheme.createButton("Làm mới số liệu", Color.WHITE, UITheme.TEXT_DARK);
         btnReload.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
-                new EmptyBorder(6, 12, 6, 12)
+                new EmptyBorder(6, 14, 6, 14)
         ));
         btnReload.addActionListener(e -> taiDuLieu());
 
@@ -81,7 +81,7 @@ public class PanelTongQuan extends JPanel {
         taiDuLieu();
     }
 
-    private JPanel taoTheKPI(String title, JLabel lblValue, Color accentColor, String icon, String note) {
+    private JPanel taoTheKPI(String title, JLabel lblValue, Color accentColor, String note) {
         JPanel card = new JPanel(new BorderLayout(0, 6));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -92,18 +92,9 @@ public class PanelTongQuan extends JPanel {
                 )
         ));
 
-        JPanel pnlTop = new JPanel(new BorderLayout());
-        pnlTop.setOpaque(false);
-
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblTitle.setForeground(UITheme.TEXT_MUTED);
-
-        JLabel lblIcon = new JLabel(icon);
-        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
-
-        pnlTop.add(lblTitle, BorderLayout.WEST);
-        pnlTop.add(lblIcon, BorderLayout.EAST);
 
         lblValue.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblValue.setForeground(UITheme.TEXT_DARK);
@@ -112,7 +103,7 @@ public class PanelTongQuan extends JPanel {
         lblNote.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblNote.setForeground(UITheme.TEXT_MUTED);
 
-        card.add(pnlTop, BorderLayout.NORTH);
+        card.add(lblTitle, BorderLayout.NORTH);
         card.add(lblValue, BorderLayout.CENTER);
         card.add(lblNote, BorderLayout.SOUTH);
 
@@ -128,13 +119,14 @@ public class PanelTongQuan extends JPanel {
         modelLichHen.setRowCount(0);
         List<LichHen> list = lichHenDAO.getAll();
         for (LichHen lh : list) {
+            String gioFormat = FormatUtil.formatShortTime(lh.getGioBatDau()) + " - " + FormatUtil.formatShortTime(lh.getGioKetThuc());
             modelLichHen.addRow(new Object[]{
                     lh.getMaLichHen(),
                     lh.getTenBN(),
                     lh.getSoDienThoai(),
                     lh.getTenBS(),
                     lh.getMaGhe(),
-                    lh.getGioBatDau() + " - " + lh.getGioKetThuc(),
+                    gioFormat,
                     lh.getSoThuTuCho() > 0 ? "STT " + lh.getSoThuTuCho() : "-",
                     lh.getTinhTrang()
             });

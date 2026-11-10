@@ -61,10 +61,10 @@ public class PanelThongKe extends JPanel {
         lblSub.setFont(UITheme.FONT_SUBTITLE);
         lblSub.setForeground(UITheme.TEXT_DARK);
 
-        JButton btnReload = UITheme.createButton("🔄  Làm mới báo cáo", Color.WHITE, UITheme.TEXT_DARK);
+        JButton btnReload = UITheme.createButton("Làm mới báo cáo", Color.WHITE, UITheme.TEXT_DARK);
         btnReload.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
-                new EmptyBorder(6, 12, 6, 12)
+                new EmptyBorder(6, 14, 6, 14)
         ));
         btnReload.addActionListener(e -> taiDuLieu());
 

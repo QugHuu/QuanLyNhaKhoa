@@ -67,10 +67,10 @@ public class PanelBenhNhan extends JPanel {
         JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 8, 8));
         pnlButtons.setOpaque(false);
 
-        JButton btnThem = UITheme.createButton("➕  Thêm mới", UITheme.PRIMARY, Color.WHITE);
-        JButton btnSua = UITheme.createButton("✏️  Cập nhật", UITheme.INFO, Color.WHITE);
-        JButton btnXoa = UITheme.createButton("🔒  Khóa hồ sơ", UITheme.DANGER, Color.WHITE);
-        JButton btnLamMoi = UITheme.createButton("🔄  Làm mới", Color.WHITE, UITheme.TEXT_DARK);
+        JButton btnThem = UITheme.createButton("Thêm mới", UITheme.PRIMARY, Color.WHITE);
+        JButton btnSua = UITheme.createButton("Cập nhật", UITheme.INFO, Color.WHITE);
+        JButton btnXoa = UITheme.createButton("Khóa hồ sơ", UITheme.DANGER, Color.WHITE);
+        JButton btnLamMoi = UITheme.createButton("Làm mới", Color.WHITE, UITheme.TEXT_DARK);
         btnLamMoi.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
                 new EmptyBorder(8, 12, 8, 12)
@@ -103,7 +103,7 @@ public class PanelBenhNhan extends JPanel {
         pnlSearch.setOpaque(false);
         txtTimKiem = new JTextField(20);
         txtTimKiem.putClientProperty("JTextField.placeholderText", "Tìm theo Họ tên hoặc SĐT...");
-        JButton btnTim = UITheme.createButton("🔍 Tìm", UITheme.PRIMARY, Color.WHITE);
+        JButton btnTim = UITheme.createButton("Tìm kiếm", UITheme.PRIMARY, Color.WHITE);
         btnTim.addActionListener(e -> xuLyTimKiem());
 
         pnlSearch.add(new JLabel("Tìm kiếm:"));

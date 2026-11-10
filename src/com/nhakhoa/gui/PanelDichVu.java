@@ -51,9 +51,9 @@ public class PanelDichVu extends JPanel {
 
         JPanel pnlButtons = new JPanel(new GridLayout(1, 3, 8, 0));
         pnlButtons.setOpaque(false);
-        JButton btnThem = UITheme.createButton("➕ Thêm", UITheme.PRIMARY, Color.WHITE);
-        JButton btnSua = UITheme.createButton("✏️ Sửa", UITheme.INFO, Color.WHITE);
-        JButton btnLamMoi = UITheme.createButton("🔄 Làm mới", Color.WHITE, UITheme.TEXT_DARK);
+        JButton btnThem = UITheme.createButton("Thêm", UITheme.PRIMARY, Color.WHITE);
+        JButton btnSua = UITheme.createButton("Sửa", UITheme.INFO, Color.WHITE);
+        JButton btnLamMoi = UITheme.createButton("Làm mới", Color.WHITE, UITheme.TEXT_DARK);
         btnLamMoi.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
                 new EmptyBorder(8, 8, 8, 8)

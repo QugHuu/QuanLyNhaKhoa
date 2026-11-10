@@ -52,7 +52,7 @@ public class PanelKhoVatTu extends JPanel {
         txtHSD.setText("31/12/2027");
         txtSLTon = new JTextField("50", 5);
 
-        JButton btnNhapLo = UITheme.createButton("📥  Nhập Lô Mới", UITheme.PRIMARY, Color.WHITE);
+        JButton btnNhapLo = UITheme.createButton("Nhập Lô Mới", UITheme.PRIMARY, Color.WHITE);
         btnNhapLo.addActionListener(e -> xuLyNhapLo());
 
         pnlNhapLo.add(new JLabel("Vật tư:"));
@@ -103,9 +103,9 @@ public class PanelKhoVatTu extends JPanel {
         UITheme.formatTable(tblCanhBao);
         pnlTab3.add(new JScrollPane(tblCanhBao), BorderLayout.CENTER);
 
-        tabMain.addTab("📦  Quản Lý Lô Theo FEFO (HanSuDung ASC)", pnlTab1);
-        tabMain.addTab("📊  Tổng Hợp Tồn Kho & Định Mức", pnlTab2);
-        tabMain.addTab("⚠️  Bảng Cảnh Báo Cận Hạn & Dưới Định Mức", pnlTab3);
+        tabMain.addTab("Quản Lý Lô Theo FEFO (HanSuDung ASC)", pnlTab1);
+        tabMain.addTab("Tổng Hợp Tồn Kho & Định Mức", pnlTab2);
+        tabMain.addTab("Bảng Cảnh Báo Cận Hạn & Dưới Định Mức", pnlTab3);
 
         pnlCard.add(tabMain, BorderLayout.CENTER);
         add(pnlCard, BorderLayout.CENTER);
@@ -140,7 +140,7 @@ public class PanelKhoVatTu extends JPanel {
         modelTongHop.setRowCount(0);
         List<VatTu> listVT = khoDAO.getAllVatTu();
         for (VatTu vt : listVT) {
-            String danhGia = vt.isCanhBaoTonThap() ? "⚠️ DƯỚI ĐỊNH MỨC TỐI THIỂU" : "✅ Đạt chuẩn tồn";
+            String danhGia = vt.isCanhBaoTonThap() ? "DƯỚI ĐỊNH MỨC TỐI THIỂU" : "Đạt chuẩn tồn";
             modelTongHop.addRow(new Object[]{
                     vt.getMaVatTu(),
                     vt.getTenVatTu(),
