@@ -6,34 +6,47 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 /**
- * Tiện ích giao diện: Bảng màu, Font chữ và Renderers hiện đại
- * Sử dụng ký tự chữ chuẩn, tương thích 100% font chữ Windows, không bị lỗi ô vuông []
+ * Hệ thống Style & Theme chuẩn theo Mockup Figma Nha Khoa:
+ * - Tone chủ đạo: Deep Teal (#006C5B) & Soft Mint (#E6F4F1)
+ * - Sidebar sáng màu (White / Light gray) hiện đại
+ * - Card trắng nổi bật trên nền xám nhạt (#F4F6F8)
+ * - Huy hiệu Pill badge đa sắc, bo góc mềm mại
  */
 public class UITheme {
-    // Bảng màu hiện đại (Modern Medical Clinic Theme)
-    public static final Color PRIMARY = new Color(13, 148, 136);       // Teal đậm sang trọng
-    public static final Color PRIMARY_HOVER = new Color(15, 118, 110);
-    public static final Color PRIMARY_LIGHT = new Color(204, 251, 241);
-    public static final Color SECONDARY = new Color(30, 41, 59);       // Slate tối sang trọng (Sidebar)
-    public static final Color BG_MAIN = new Color(248, 250, 252);      // Nền chính mềm mại
+    // Bảng màu chuẩn từ mockup
+    public static final Color PRIMARY = new Color(0, 108, 91);           // Deep Teal đậm đà (#006C5B)
+    public static final Color PRIMARY_HOVER = new Color(0, 85, 71);
+    public static final Color PRIMARY_LIGHT = new Color(230, 244, 241);  // Mint nhạt (#E6F4F1)
+    
+    public static final Color SIDEBAR_BG = Color.WHITE;                  // Sidebar sáng màu theo mockup
+    public static final Color BG_MAIN = new Color(244, 246, 248);        // Nền canvas xám sáng (#F4F6F8)
     public static final Color BG_CARD = Color.WHITE;
-    public static final Color BORDER_COLOR = new Color(226, 232, 240); // Viền xám mảnh tinh tế
-    public static final Color TEXT_DARK = new Color(15, 23, 42);       // Chữ đen xám dịu mắt
-    public static final Color TEXT_MUTED = new Color(100, 116, 139);   // Chữ phụ
-    public static final Color SUCCESS = new Color(16, 185, 129);       // Xanh lá thành công
-    public static final Color WARNING = new Color(245, 158, 11);       // Cam cảnh báo
-    public static final Color DANGER = new Color(239, 68, 68);         // Đỏ lỗi / xóa
-    public static final Color INFO = new Color(14, 165, 233);          // Xanh dương thông tin
+    public static final Color BORDER_COLOR = new Color(226, 232, 240);   // Viền xám mảnh (#E2E8F0)
+    
+    public static final Color TEXT_DARK = new Color(15, 23, 42);         // Chữ chính Slate 900
+    public static final Color TEXT_MUTED = new Color(100, 116, 139);     // Chữ phụ Slate 500
+    
+    public static final Color SUCCESS = new Color(16, 185, 129);         // Xanh lá (#10B981)
+    public static final Color WARNING_BG = new Color(254, 243, 199);     // Nền cam nhạt
+    public static final Color WARNING_TEXT = new Color(180, 83, 9);      // Chữ cam đậm
+    public static final Color WARNING = WARNING_TEXT;
+    public static final Color DANGER_BG = new Color(254, 226, 226);      // Nền đỏ nhạt
+    public static final Color DANGER_TEXT = new Color(185, 28, 28);      // Chữ đỏ đậm
+    public static final Color DANGER = DANGER_TEXT;
+    public static final Color INFO_BG = new Color(224, 242, 254);        // Nền xanh dương nhạt
+    public static final Color INFO_TEXT = new Color(3, 105, 161);
+    public static final Color INFO = INFO_TEXT;
 
-    // Fonts chuẩn Segoe UI của Windows, hiển thị tiếng Việt hoàn hảo
+    // Font chuẩn giao diện
     public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 18);
     public static final Font FONT_SUBTITLE = new Font("Segoe UI", Font.BOLD, 14);
     public static final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 13);
     public static final Font FONT_REGULAR = new Font("Segoe UI", Font.PLAIN, 13);
     public static final Font FONT_SMALL = new Font("Segoe UI", Font.PLAIN, 12);
+    public static final Font FONT_TINY = new Font("Segoe UI", Font.PLAIN, 11);
 
     /**
-     * Tạo nút bấm có phong cách phẳng, bo góc hiện đại
+     * Tạo nút bấm bo tròn hiện đại theo mockup
      */
     public static JButton createButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text);
@@ -48,7 +61,7 @@ public class UITheme {
     }
 
     /**
-     * Tạo card bo góc viền nhẹ
+     * Tạo Card bo góc mềm mại viền nhẹ
      */
     public static JPanel createCard() {
         JPanel pnl = new JPanel();
@@ -61,7 +74,17 @@ public class UITheme {
     }
 
     /**
-     * Renderer vẽ trạng thái dạng Pill badge có màu sắc sinh động
+     * Tạo Card không padding mặc định
+     */
+    public static JPanel createCardRaw() {
+        JPanel pnl = new JPanel();
+        pnl.setBackground(BG_CARD);
+        pnl.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1, true));
+        return pnl;
+    }
+
+    /**
+     * Renderer vẽ trạng thái dạng Pill badge theo chuẩn Figma mockup
      */
     public static class StatusBadgeRenderer extends DefaultTableCellRenderer {
         public StatusBadgeRenderer() {
@@ -74,7 +97,7 @@ public class UITheme {
             if (value == null) return lbl;
 
             String val = value.toString();
-            lbl.setFont(FONT_BOLD);
+            lbl.setFont(FONT_SMALL);
 
             if (isSelected) {
                 lbl.setBackground(table.getSelectionBackground());
@@ -90,9 +113,9 @@ public class UITheme {
                 case "DANG_AP_DUNG":
                 case "KHA_DUNG":
                 case "DA_KHAM":
-                    lbl.setBackground(new Color(209, 250, 229));
-                    lbl.setForeground(new Color(6, 95, 70));
-                    lbl.setText(" " + val + " ");
+                    lbl.setBackground(PRIMARY_LIGHT);
+                    lbl.setForeground(PRIMARY);
+                    lbl.setText("  " + val + "  ");
                     break;
 
                 case "CHO_KHAM":
@@ -102,15 +125,15 @@ public class UITheme {
                 case "DANG_DIEU_TRI":
                 case "DANG_LAM":
                 case "DANG_TRUC":
-                    lbl.setBackground(new Color(254, 243, 199));
-                    lbl.setForeground(new Color(146, 64, 14));
-                    lbl.setText(" " + val + " ");
+                    lbl.setBackground(WARNING_BG);
+                    lbl.setForeground(WARNING_TEXT);
+                    lbl.setText("  " + val + "  ");
                     break;
 
                 case "DA_DEN":
-                    lbl.setBackground(new Color(224, 242, 254));
-                    lbl.setForeground(new Color(3, 105, 161));
-                    lbl.setText(" ĐÃ ĐẾN ");
+                    lbl.setBackground(INFO_BG);
+                    lbl.setForeground(INFO_TEXT);
+                    lbl.setText("  ĐÃ ĐẾN  ");
                     break;
 
                 case "TAM_KHOA":
@@ -120,9 +143,9 @@ public class UITheme {
                 case "HUY":
                 case "KHOA":
                 case "NGHI_VIEC":
-                    lbl.setBackground(new Color(254, 226, 226));
-                    lbl.setForeground(new Color(153, 27, 27));
-                    lbl.setText(" " + val + " ");
+                    lbl.setBackground(DANGER_BG);
+                    lbl.setForeground(DANGER_TEXT);
+                    lbl.setText("  " + val + "  ");
                     break;
 
                 default:
@@ -139,15 +162,15 @@ public class UITheme {
      * Cấu hình JTable hiện đại
      */
     public static void formatTable(JTable table) {
-        table.setRowHeight(32);
+        table.setRowHeight(34);
         table.setFont(FONT_REGULAR);
         table.getTableHeader().setFont(FONT_BOLD);
-        table.getTableHeader().setBackground(new Color(241, 245, 249));
-        table.getTableHeader().setForeground(TEXT_DARK);
+        table.getTableHeader().setBackground(new Color(248, 250, 252));
+        table.getTableHeader().setForeground(TEXT_MUTED);
         table.setShowGrid(false);
         table.setShowHorizontalLines(true);
         table.setGridColor(new Color(241, 245, 249));
-        table.setSelectionBackground(new Color(204, 251, 241));
-        table.setSelectionForeground(new Color(15, 23, 42));
+        table.setSelectionBackground(PRIMARY_LIGHT);
+        table.setSelectionForeground(TEXT_DARK);
     }
 }

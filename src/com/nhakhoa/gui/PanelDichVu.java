@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.List;
 
 public class PanelDichVu extends JPanel {
-    private JTextField txtMaDV, txtTenDV, txtDonGia;
+    private JTextField txtMaDV, txtTenDV, txtDonGia, txtTimKiem;
     private JComboBox<String> cboTinhTrang;
     private JTable tblDichVu;
     private DefaultTableModel modelDichVu;
@@ -20,20 +20,43 @@ public class PanelDichVu extends JPanel {
     private DichVuDAO dichVuDAO = new DichVuDAO();
 
     public PanelDichVu() {
-        setLayout(new BorderLayout(18, 0));
-        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setLayout(new BorderLayout(0, 14));
+        setBorder(new EmptyBorder(16, 24, 20, 24));
         setBackground(UITheme.BG_MAIN);
+
+        // Header
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setOpaque(false);
+
+        JPanel pnlTitle = new JPanel(new GridLayout(2, 1, 0, 2));
+        pnlTitle.setOpaque(false);
+        JLabel lblHeading = new JLabel("Bảng giá dịch vụ");
+        lblHeading.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblHeading.setForeground(UITheme.TEXT_DARK);
+
+        JLabel lblSub = new JLabel("Danh mục thủ thuật, đơn giá niêm yết và trạng thái áp dụng");
+        lblSub.setFont(UITheme.FONT_REGULAR);
+        lblSub.setForeground(UITheme.TEXT_MUTED);
+
+        pnlTitle.add(lblHeading);
+        pnlTitle.add(lblSub);
+
+        pnlHeader.add(pnlTitle, BorderLayout.WEST);
+
+        // Content Split
+        JPanel pnlContent = new JPanel(new BorderLayout(18, 0));
+        pnlContent.setOpaque(false);
 
         // LEFT: Form Card
         JPanel pnlLeftCard = UITheme.createCard();
         pnlLeftCard.setLayout(new BorderLayout(0, 14));
         pnlLeftCard.setPreferredSize(new Dimension(360, 0));
 
-        JLabel lblFormTitle = new JLabel("THỦ THUẬT & DỊCH VỤ");
+        JLabel lblFormTitle = new JLabel("Thông tin dịch vụ");
         lblFormTitle.setFont(UITheme.FONT_SUBTITLE);
         lblFormTitle.setForeground(UITheme.TEXT_DARK);
 
-        JPanel pnlForm = new JPanel(new GridLayout(4, 1, 0, 8));
+        JPanel pnlForm = new JPanel(new GridLayout(4, 1, 0, 10));
         pnlForm.setOpaque(false);
 
         txtMaDV = new JTextField(dichVuDAO.taoMaDVMoi());
@@ -51,8 +74,8 @@ public class PanelDichVu extends JPanel {
 
         JPanel pnlButtons = new JPanel(new GridLayout(1, 3, 8, 0));
         pnlButtons.setOpaque(false);
-        JButton btnThem = UITheme.createButton("Thêm", UITheme.PRIMARY, Color.WHITE);
-        JButton btnSua = UITheme.createButton("Sửa", UITheme.INFO, Color.WHITE);
+        JButton btnThem = UITheme.createButton("Thêm mới", UITheme.PRIMARY, Color.WHITE);
+        JButton btnSua = UITheme.createButton("Cập nhật", UITheme.INFO, Color.WHITE);
         JButton btnLamMoi = UITheme.createButton("Làm mới", Color.WHITE, UITheme.TEXT_DARK);
         btnLamMoi.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
@@ -75,9 +98,30 @@ public class PanelDichVu extends JPanel {
         JPanel pnlRightCard = UITheme.createCard();
         pnlRightCard.setLayout(new BorderLayout(0, 12));
 
-        JLabel lblTableTitle = new JLabel("BẢNG GIÁ DỊCH VỤ NIÊM YẾT HIỆN HÀNH");
+        JPanel pnlTableTop = new JPanel(new BorderLayout());
+        pnlTableTop.setOpaque(false);
+
+        JLabel lblTableTitle = new JLabel("Danh mục dịch vụ niêm yết");
         lblTableTitle.setFont(UITheme.FONT_SUBTITLE);
         lblTableTitle.setForeground(UITheme.TEXT_DARK);
+
+        JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        pnlSearch.setOpaque(false);
+        txtTimKiem = new JTextField(16);
+        txtTimKiem.putClientProperty("JTextField.placeholderText", "Tìm tên dịch vụ...");
+        JButton btnTim = UITheme.createButton("Tìm", Color.WHITE, UITheme.TEXT_DARK);
+        btnTim.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(5, 10, 5, 10)
+        ));
+        btnTim.addActionListener(e -> timKiemDichVu());
+        txtTimKiem.addActionListener(e -> timKiemDichVu());
+
+        pnlSearch.add(txtTimKiem);
+        pnlSearch.add(btnTim);
+
+        pnlTableTop.add(lblTableTitle, BorderLayout.WEST);
+        pnlTableTop.add(pnlSearch, BorderLayout.EAST);
 
         String[] headers = {"Mã DV", "Tên Dịch Vụ Nha Khoa", "Đơn Giá Niêm Yết", "Tình Trạng"};
         modelDichVu = new DefaultTableModel(headers, 0) {
@@ -93,21 +137,26 @@ public class PanelDichVu extends JPanel {
             if (row >= 0) {
                 txtMaDV.setText(modelDichVu.getValueAt(row, 0).toString());
                 txtTenDV.setText(modelDichVu.getValueAt(row, 1).toString());
+                String giaRaw = modelDichVu.getValueAt(row, 2).toString().replaceAll("[^0-9]", "");
+                txtDonGia.setText(giaRaw);
                 cboTinhTrang.setSelectedItem(modelDichVu.getValueAt(row, 3).toString());
             }
         });
 
-        pnlRightCard.add(lblTableTitle, BorderLayout.NORTH);
+        pnlRightCard.add(pnlTableTop, BorderLayout.NORTH);
         pnlRightCard.add(new JScrollPane(tblDichVu), BorderLayout.CENTER);
 
-        add(pnlLeftCard, BorderLayout.WEST);
-        add(pnlRightCard, BorderLayout.CENTER);
+        pnlContent.add(pnlLeftCard, BorderLayout.WEST);
+        pnlContent.add(pnlRightCard, BorderLayout.CENTER);
+
+        add(pnlHeader, BorderLayout.NORTH);
+        add(pnlContent, BorderLayout.CENTER);
 
         taiDuLieu();
     }
 
     private JPanel taoFieldInput(String label, JComponent comp) {
-        JPanel p = new JPanel(new BorderLayout(0, 3));
+        JPanel p = new JPanel(new BorderLayout(0, 4));
         p.setOpaque(false);
         JLabel l = new JLabel(label);
         l.setFont(UITheme.FONT_BOLD);
@@ -127,6 +176,26 @@ public class PanelDichVu extends JPanel {
                     FormatUtil.formatMoney(dv.getDonGia()),
                     dv.getTinhTrang()
             });
+        }
+    }
+
+    private void timKiemDichVu() {
+        String kw = txtTimKiem.getText().trim().toLowerCase();
+        if (kw.isEmpty()) {
+            taiDuLieu();
+            return;
+        }
+        modelDichVu.setRowCount(0);
+        List<DichVu> list = dichVuDAO.getAll();
+        for (DichVu dv : list) {
+            if (dv.getTenDV().toLowerCase().contains(kw) || dv.getMaDV().toLowerCase().contains(kw)) {
+                modelDichVu.addRow(new Object[]{
+                        dv.getMaDV(),
+                        dv.getTenDV(),
+                        FormatUtil.formatMoney(dv.getDonGia()),
+                        dv.getTinhTrang()
+                });
+            }
         }
     }
 

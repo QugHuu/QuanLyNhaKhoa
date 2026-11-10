@@ -16,86 +16,199 @@ import java.util.List;
 
 public class PanelKhamBenh extends JPanel {
     private JComboBox<LichHen> cboBenhNhanCho;
-    private JTextField txtTrieuChung, txtChanDoan, txtViTriRang, txtLoiDan;
+    private JLabel lblPatientBadge, lblAllergyNotice;
+    private JTextField txtTrieuChung, txtChanDoan, txtLoiDan, txtViTriRangChon;
     private JComboBox<DichVu> cboDichVu;
     private JSpinner spSoLuongDV;
-    private JTextField txtTenThuoc, txtDVTThuoc, txtLieuDung;
-    private JSpinner spSoLuongThuoc;
+    private JLabel lblTongTamTinh;
 
     private JTable tblDichVuChiDinh, tblDonThuoc;
     private DefaultTableModel modelDV, modelThuoc;
 
     private List<ChiTietDieuTri> listCTDT = new ArrayList<>();
     private List<ChiTietDonThuoc> listThuoc = new ArrayList<>();
+    private List<JButton> toothButtons = new ArrayList<>();
 
     private LichHenBUS lichHenBUS = new LichHenBUS();
     private DichVuDAO dichVuDAO = new DichVuDAO();
     private PhieuKhamDAO phieuKhamDAO = new PhieuKhamDAO();
 
     public PanelKhamBenh() {
-        setLayout(new BorderLayout(0, 16));
-        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setLayout(new BorderLayout(0, 14));
+        setBorder(new EmptyBorder(16, 20, 16, 20));
         setBackground(UITheme.BG_MAIN);
 
-        // TOP: Card Tiếp nhận & Chẩn đoán
-        JPanel pnlTopCard = UITheme.createCard();
-        pnlTopCard.setLayout(new GridLayout(3, 2, 16, 8));
+        // ==================== 1. PAGE HEADER ====================
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setOpaque(false);
 
+        JPanel pnlTitle = new JPanel(new GridLayout(2, 1, 0, 2));
+        pnlTitle.setOpaque(false);
+        JLabel lblHeading = new JLabel("Khám & điều trị");
+        lblHeading.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblHeading.setForeground(UITheme.TEXT_DARK);
+
+        JLabel lblSub = new JLabel("Khám lâm sàng, chẩn đoán sơ đồ răng và chỉ định thủ thuật");
+        lblSub.setFont(UITheme.FONT_SMALL);
+        lblSub.setForeground(UITheme.TEXT_MUTED);
+
+        pnlTitle.add(lblHeading);
+        pnlTitle.add(lblSub);
+
+        JPanel pnlHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlHeaderActions.setOpaque(false);
+
+        JButton btnLuuKham = UITheme.createButton("Lưu phiếu khám", Color.WHITE, UITheme.TEXT_DARK);
+        btnLuuKham.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+        btnLuuKham.addActionListener(e -> xuLyLuuCaKham());
+
+        JButton btnHoanTat = UITheme.createButton("Hoàn tất điều trị & Trừ kho (FEFO)", UITheme.PRIMARY, Color.WHITE);
+        btnHoanTat.addActionListener(e -> xuLyLuuCaKham());
+
+        pnlHeaderActions.add(btnLuuKham);
+        pnlHeaderActions.add(btnHoanTat);
+
+        pnlHeader.add(pnlTitle, BorderLayout.WEST);
+        pnlHeader.add(pnlHeaderActions, BorderLayout.EAST);
+
+        // ==================== 2. PATIENT BANNER CARD ====================
+        JPanel pnlBannerCard = UITheme.createCard();
+        pnlBannerCard.setLayout(new BorderLayout(14, 0));
+
+        JPanel pnlQueueBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        pnlQueueBox.setOpaque(false);
+        pnlQueueBox.add(new JLabel("Hàng đợi khám (Đã đến):"));
         cboBenhNhanCho = new JComboBox<>();
-        JButton btnReloadQueue = UITheme.createButton("Tải hàng đợi", Color.WHITE, UITheme.TEXT_DARK);
-        btnReloadQueue.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
-                new EmptyBorder(6, 12, 6, 12)
-        ));
-        btnReloadQueue.addActionListener(e -> taiDanhSachHangDoi());
+        cboBenhNhanCho.setPreferredSize(new Dimension(280, 32));
+        cboBenhNhanCho.addActionListener(e -> capNhatThongTinBN());
+        pnlQueueBox.add(cboBenhNhanCho);
 
-        JPanel pnlQueue = new JPanel(new BorderLayout(8, 0));
-        pnlQueue.setOpaque(false);
-        pnlQueue.add(cboBenhNhanCho, BorderLayout.CENTER);
-        pnlQueue.add(btnReloadQueue, BorderLayout.EAST);
+        JButton btnReload = new JButton("Tải lại");
+        btnReload.addActionListener(e -> taiDanhSachHangDoi());
+        pnlQueueBox.add(btnReload);
 
-        txtTrieuChung = new JTextField();
-        txtChanDoan = new JTextField();
+        JPanel pnlBannerStatus = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlBannerStatus.setOpaque(false);
 
-        pnlTopCard.add(taoFieldInput("Bệnh nhân trong hàng đợi (Đã đến - RB08):", pnlQueue));
-        pnlTopCard.add(taoFieldInput("Triệu chứng lâm sàng:", txtTrieuChung));
-        pnlTopCard.add(taoFieldInput("Chẩn đoán chuyên môn của Bác sĩ:", txtChanDoan));
+        lblPatientBadge = new JLabel("  Ghế 01 · Phòng 1  ");
+        lblPatientBadge.setFont(UITheme.FONT_SMALL);
+        lblPatientBadge.setOpaque(true);
+        lblPatientBadge.setBackground(UITheme.INFO_BG);
+        lblPatientBadge.setForeground(UITheme.INFO_TEXT);
 
-        // CENTER: 2 Cột Dịch vụ & Đơn thuốc
-        JPanel pnlCenter = new JPanel(new GridLayout(1, 2, 16, 0));
-        pnlCenter.setOpaque(false);
+        lblAllergyNotice = new JLabel("  Tiền sử: Bình thường  ");
+        lblAllergyNotice.setFont(UITheme.FONT_SMALL);
+        lblAllergyNotice.setOpaque(true);
+        lblAllergyNotice.setBackground(UITheme.WARNING_BG);
+        lblAllergyNotice.setForeground(UITheme.WARNING_TEXT);
 
-        // CỘT 1: Dịch vụ điều trị
+        pnlBannerStatus.add(lblPatientBadge);
+        pnlBannerStatus.add(lblAllergyNotice);
+
+        pnlBannerCard.add(pnlQueueBox, BorderLayout.WEST);
+        pnlBannerCard.add(pnlBannerStatus, BorderLayout.EAST);
+
+        JPanel pnlTopGroup = new JPanel(new BorderLayout(0, 10));
+        pnlTopGroup.setOpaque(false);
+        pnlTopGroup.add(pnlHeader, BorderLayout.NORTH);
+        pnlTopGroup.add(pnlBannerCard, BorderLayout.SOUTH);
+
+        // ==================== 3. BODY: 2 CỘT (SƠ ĐỒ RĂNG + DỊCH VỤ) ====================
+        JPanel pnlBody = new JPanel(new BorderLayout(14, 0));
+        pnlBody.setOpaque(false);
+
+        // CỘT TRÁI (Sơ đồ răng + Khám lâm sàng)
+        JPanel pnlLeft = new JPanel(new BorderLayout(0, 12));
+        pnlLeft.setOpaque(false);
+
+        // Sơ đồ răng Card (Theo Mockup 05)
+        JPanel pnlDentalChartCard = UITheme.createCard();
+        pnlDentalChartCard.setLayout(new BorderLayout(0, 10));
+
+        JPanel pnlChartTitle = new JPanel(new BorderLayout());
+        pnlChartTitle.setOpaque(false);
+        JLabel lblChart = new JLabel("Sơ đồ răng (Người lớn 18 - 48)");
+        lblChart.setFont(UITheme.FONT_SUBTITLE);
+        lblChart.setForeground(UITheme.TEXT_DARK);
+
+        txtViTriRangChon = new JTextField("Răng 36", 10);
+        txtViTriRangChon.setEditable(false);
+        txtViTriRangChon.setBackground(new Color(241, 245, 249));
+
+        JPanel pnlSelTooth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        pnlSelTooth.setOpaque(false);
+        pnlSelTooth.add(new JLabel("Đang chọn:"));
+        pnlSelTooth.add(txtViTriRangChon);
+
+        pnlChartTitle.add(lblChart, BorderLayout.WEST);
+        pnlChartTitle.add(pnlSelTooth, BorderLayout.EAST);
+
+        // Grid Sơ đồ răng 2 hàm
+        JPanel pnlTeethGrid = new JPanel(new GridLayout(2, 1, 0, 6));
+        pnlTeethGrid.setOpaque(false);
+
+        // Hàm trên (18..11 | 21..28)
+        JPanel pnlUpperTeeth = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
+        pnlUpperTeeth.setOpaque(false);
+        int[] upper = {18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28};
+        for (int t : upper) pnlUpperTeeth.add(taoNutRang(t));
+
+        // Hàm dưới (48..41 | 31..38)
+        JPanel pnlLowerTeeth = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
+        pnlLowerTeeth.setOpaque(false);
+        int[] lower = {48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38};
+        for (int t : lower) pnlLowerTeeth.add(taoNutRang(t));
+
+        pnlTeethGrid.add(pnlUpperTeeth);
+        pnlTeethGrid.add(pnlLowerTeeth);
+
+        pnlDentalChartCard.add(pnlChartTitle, BorderLayout.NORTH);
+        pnlDentalChartCard.add(pnlTeethGrid, BorderLayout.CENTER);
+
+        // Card Khám lâm sàng
+        JPanel pnlClinicalCard = UITheme.createCard();
+        pnlClinicalCard.setLayout(new GridLayout(3, 1, 0, 8));
+
+        txtTrieuChung = new JTextField("Đau nhức răng hàm dưới khi ăn đồ nóng lạnh");
+        txtChanDoan = new JTextField("Sâu răng số 36 độ 2, viêm nướu nhẹ");
+        txtLoiDan = new JTextField("Tránh nhai đồ quá cứng trong 24h, tái khám sau 1 tuần");
+
+        pnlClinicalCard.add(taoField("Triệu chứng lâm sàng:", txtTrieuChung));
+        pnlClinicalCard.add(taoField("Chẩn đoán bác sĩ:", txtChanDoan));
+        pnlClinicalCard.add(taoField("Lời dặn sau thủ thuật:", txtLoiDan));
+
+        pnlLeft.add(pnlDentalChartCard, BorderLayout.NORTH);
+        pnlLeft.add(pnlClinicalCard, BorderLayout.CENTER);
+
+        // CỘT PHẢI (Chỉ định dịch vụ & Kê đơn thuốc - 460px)
+        JPanel pnlRight = new JPanel(new BorderLayout(0, 12));
+        pnlRight.setPreferredSize(new Dimension(460, 0));
+        pnlRight.setOpaque(false);
+
+        // Card Chỉ định dịch vụ
         JPanel pnlDVCard = UITheme.createCard();
-        pnlDVCard.setLayout(new BorderLayout(0, 10));
+        pnlDVCard.setLayout(new BorderLayout(0, 8));
 
-        JLabel lblDVTitle = new JLabel("CHỈ ĐỊNH DỊCH VỤ NHA KHOA");
+        JPanel pnlDVTop = new JPanel(new BorderLayout());
+        pnlDVTop.setOpaque(false);
+        JLabel lblDVTitle = new JLabel("Chỉ định dịch vụ");
         lblDVTitle.setFont(UITheme.FONT_SUBTITLE);
         lblDVTitle.setForeground(UITheme.TEXT_DARK);
+        pnlDVTop.add(lblDVTitle, BorderLayout.WEST);
 
-        JPanel pnlDVInput = new JPanel(new GridLayout(3, 2, 8, 6));
-        pnlDVInput.setOpaque(false);
+        JPanel pnlDVAdd = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        pnlDVAdd.setOpaque(false);
         cboDichVu = new JComboBox<>();
+        cboDichVu.setPreferredSize(new Dimension(200, 30));
         spSoLuongDV = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
-        txtViTriRang = new JTextField("Răng 36");
+        JButton btnAddDV = UITheme.createButton("+ Thêm", UITheme.PRIMARY, Color.WHITE);
+        btnAddDV.addActionListener(e -> xuLyThemDV());
 
-        pnlDVInput.add(new JLabel("Dịch vụ:"));
-        pnlDVInput.add(cboDichVu);
-        pnlDVInput.add(new JLabel("Vị trí răng:"));
-        pnlDVInput.add(txtViTriRang);
-        pnlDVInput.add(new JLabel("Số lượng:"));
-        pnlDVInput.add(spSoLuongDV);
+        pnlDVAdd.add(cboDichVu);
+        pnlDVAdd.add(spSoLuongDV);
+        pnlDVAdd.add(btnAddDV);
 
-        JButton btnThemDV = UITheme.createButton("Thêm dịch vụ", UITheme.PRIMARY, Color.WHITE);
-        btnThemDV.addActionListener(e -> xuLyThemDV());
-
-        JPanel pnlDVTop = new JPanel(new BorderLayout(0, 8));
-        pnlDVTop.setOpaque(false);
-        pnlDVTop.add(lblDVTitle, BorderLayout.NORTH);
-        pnlDVTop.add(pnlDVInput, BorderLayout.CENTER);
-        pnlDVTop.add(btnThemDV, BorderLayout.SOUTH);
-
-        String[] headersDV = {"Tên Dịch Vụ", "Vị Trí Răng", "SL", "Đơn Giá", "Thành Tiền"};
+        String[] headersDV = {"Dịch vụ nha khoa", "Răng", "SL", "Thành tiền"};
         modelDV = new DefaultTableModel(headersDV, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -103,90 +216,86 @@ public class PanelKhamBenh extends JPanel {
         tblDichVuChiDinh = new JTable(modelDV);
         UITheme.formatTable(tblDichVuChiDinh);
 
-        pnlDVCard.add(pnlDVTop, BorderLayout.NORTH);
+        JPanel pnlDVBottom = new JPanel(new BorderLayout());
+        pnlDVBottom.setOpaque(false);
+        lblTongTamTinh = new JLabel("Tổng tạm tính: 0 đ");
+        lblTongTamTinh.setFont(UITheme.FONT_BOLD);
+        lblTongTamTinh.setForeground(UITheme.PRIMARY);
+        pnlDVBottom.add(lblTongTamTinh, BorderLayout.EAST);
+
+        JPanel pnlDVCardNorth = new JPanel(new BorderLayout(0, 6));
+        pnlDVCardNorth.setOpaque(false);
+        pnlDVCardNorth.add(pnlDVTop, BorderLayout.NORTH);
+        pnlDVCardNorth.add(pnlDVAdd, BorderLayout.SOUTH);
+
+        pnlDVCard.add(pnlDVCardNorth, BorderLayout.NORTH);
         pnlDVCard.add(new JScrollPane(tblDichVuChiDinh), BorderLayout.CENTER);
+        pnlDVCard.add(pnlDVBottom, BorderLayout.SOUTH);
 
-        // CỘT 2: Kê đơn thuốc
+        // Card Kê đơn thuốc
         JPanel pnlThuocCard = UITheme.createCard();
-        pnlThuocCard.setLayout(new BorderLayout(0, 10));
+        pnlThuocCard.setLayout(new BorderLayout(0, 8));
+        pnlThuocCard.setPreferredSize(new Dimension(0, 200));
 
-        JLabel lblThuocTitle = new JLabel("KÊ ĐƠN THUỐC ĐIỀU TRỊ");
+        JLabel lblThuocTitle = new JLabel("Kê đơn thuốc điều trị");
         lblThuocTitle.setFont(UITheme.FONT_SUBTITLE);
         lblThuocTitle.setForeground(UITheme.TEXT_DARK);
 
-        JPanel pnlThuocInput = new JPanel(new GridLayout(4, 2, 8, 6));
-        pnlThuocInput.setOpaque(false);
-        txtTenThuoc = new JTextField("Amoxicillin 500mg");
-        txtDVTThuoc = new JTextField("Viên");
-        spSoLuongThuoc = new JSpinner(new SpinnerNumberModel(10, 1, 100, 1));
-        txtLieuDung = new JTextField("Uống 1 viên sau ăn, ngày 2 lần");
-
-        pnlThuocInput.add(new JLabel("Tên thuốc:"));
-        pnlThuocInput.add(txtTenThuoc);
-        pnlThuocInput.add(new JLabel("Đơn vị tính:"));
-        pnlThuocInput.add(txtDVTThuoc);
-        pnlThuocInput.add(new JLabel("Số lượng:"));
-        pnlThuocInput.add(spSoLuongThuoc);
-        pnlThuocInput.add(new JLabel("Liều dùng:"));
-        pnlThuocInput.add(txtLieuDung);
-
-        JButton btnThemThuoc = UITheme.createButton("Thêm vào đơn", new Color(139, 92, 246), Color.WHITE);
-        btnThemThuoc.addActionListener(e -> xuLyThemThuoc());
-
-        JPanel pnlThuocTop = new JPanel(new BorderLayout(0, 8));
-        pnlThuocTop.setOpaque(false);
-        pnlThuocTop.add(lblThuocTitle, BorderLayout.NORTH);
-        pnlThuocTop.add(pnlThuocInput, BorderLayout.CENTER);
-        pnlThuocTop.add(btnThemThuoc, BorderLayout.SOUTH);
-
-        String[] headersThuoc = {"Tên Thuốc", "ĐVT", "SL", "Liều Dùng"};
-        modelThuoc = new DefaultTableModel(headersThuoc, 0) {
+        String[] headersT = {"Tên thuốc", "SL", "Liều dùng"};
+        modelThuoc = new DefaultTableModel(headersT, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblDonThuoc = new JTable(modelThuoc);
         UITheme.formatTable(tblDonThuoc);
 
-        pnlThuocCard.add(pnlThuocTop, BorderLayout.NORTH);
+        pnlThuocCard.add(lblThuocTitle, BorderLayout.NORTH);
         pnlThuocCard.add(new JScrollPane(tblDonThuoc), BorderLayout.CENTER);
 
-        pnlCenter.add(pnlDVCard);
-        pnlCenter.add(pnlThuocCard);
+        pnlRight.add(pnlDVCard, BorderLayout.CENTER);
+        pnlRight.add(pnlThuocCard, BorderLayout.SOUTH);
 
-        // BOTTOM: Card Lời dặn & Nút Lưu Hoàn Tất
-        JPanel pnlBottomCard = UITheme.createCard();
-        pnlBottomCard.setLayout(new BorderLayout(14, 10));
+        pnlBody.add(pnlLeft, BorderLayout.CENTER);
+        pnlBody.add(pnlRight, BorderLayout.EAST);
 
-        JPanel pnlLoiDan = new JPanel(new BorderLayout(8, 0));
-        pnlLoiDan.setOpaque(false);
-        JLabel lblLD = new JLabel("Lời dặn của bác sĩ:");
-        lblLD.setFont(UITheme.FONT_BOLD);
-        txtLoiDan = new JTextField("Tái khám sau 1 tuần. Kiêng ăn nhai đồ quá cứng.");
-        pnlLoiDan.add(lblLD, BorderLayout.WEST);
-        pnlLoiDan.add(txtLoiDan, BorderLayout.CENTER);
-
-        JButton btnLuuCaKham = UITheme.createButton("HOÀN TẤT CA KHÁM & TỰ ĐỘNG XUẤT KHO VẬT TƯ (FEFO - RB12)", UITheme.SUCCESS, Color.WHITE);
-        btnLuuCaKham.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnLuuCaKham.setPreferredSize(new Dimension(0, 44));
-        btnLuuCaKham.addActionListener(e -> xuLyLuuCaKham());
-
-        pnlBottomCard.add(pnlLoiDan, BorderLayout.CENTER);
-        pnlBottomCard.add(btnLuuCaKham, BorderLayout.SOUTH);
-
-        add(pnlTopCard, BorderLayout.NORTH);
-        add(pnlCenter, BorderLayout.CENTER);
-        add(pnlBottomCard, BorderLayout.SOUTH);
+        add(pnlTopGroup, BorderLayout.NORTH);
+        add(pnlBody, BorderLayout.CENTER);
 
         taiDanhSachHangDoi();
         taiDanhSachDichVu();
     }
 
-    private JPanel taoFieldInput(String label, JComponent comp) {
-        JPanel p = new JPanel(new BorderLayout(0, 3));
+    private JButton taoNutRang(int soRang) {
+        JButton btn = new JButton(String.valueOf(soRang));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        btn.setPreferredSize(new Dimension(38, 30));
+        btn.setBackground(soRang == 36 ? UITheme.PRIMARY_LIGHT : Color.WHITE);
+        btn.setForeground(soRang == 36 ? UITheme.PRIMARY : UITheme.TEXT_DARK);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(BorderFactory.createLineBorder(soRang == 36 ? UITheme.PRIMARY : UITheme.BORDER_COLOR, 1, true));
+
+        btn.addActionListener(e -> {
+            for (JButton b : toothButtons) {
+                b.setBackground(Color.WHITE);
+                b.setForeground(UITheme.TEXT_DARK);
+                b.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+            }
+            btn.setBackground(UITheme.PRIMARY_LIGHT);
+            btn.setForeground(UITheme.PRIMARY);
+            btn.setBorder(BorderFactory.createLineBorder(UITheme.PRIMARY, 1, true));
+            txtViTriRangChon.setText("Răng " + soRang);
+        });
+
+        toothButtons.add(btn);
+        return btn;
+    }
+
+    private JPanel taoField(String label, JComponent comp) {
+        JPanel p = new JPanel(new BorderLayout(0, 2));
         p.setOpaque(false);
         JLabel l = new JLabel(label);
         l.setFont(UITheme.FONT_BOLD);
-        l.setForeground(UITheme.TEXT_DARK);
         p.add(l, BorderLayout.NORTH);
         p.add(comp, BorderLayout.CENTER);
         return p;
@@ -197,6 +306,18 @@ public class PanelKhamBenh extends JPanel {
         List<LichHen> list = lichHenBUS.getLichHenDaDen();
         for (LichHen lh : list) {
             cboBenhNhanCho.addItem(lh);
+        }
+        capNhatThongTinBN();
+    }
+
+    private void capNhatThongTinBN() {
+        LichHen lh = (LichHen) cboBenhNhanCho.getSelectedItem();
+        if (lh != null) {
+            lblPatientBadge.setText("  " + lh.getMaGhe() + " · Phòng khám chính  ");
+            lblAllergyNotice.setText("  Bệnh nhân: " + lh.getTenBN() + "  ");
+        } else {
+            lblPatientBadge.setText("  Chưa có bệnh nhân ở phòng chờ  ");
+            lblAllergyNotice.setText("  Vui lòng tiếp nhận tại sảnh  ");
         }
     }
 
@@ -212,42 +333,22 @@ public class PanelKhamBenh extends JPanel {
         DichVu dv = (DichVu) cboDichVu.getSelectedItem();
         if (dv == null) return;
         int sl = (int) spSoLuongDV.getValue();
-        double thanhTien = sl * dv.getDonGia();
+        double tt = sl * dv.getDonGia();
 
-        ChiTietDieuTri ct = new ChiTietDieuTri("", dv.getMaDV(), dv.getTenDV(), txtViTriRang.getText().trim(), sl, dv.getDonGia(), thanhTien);
+        ChiTietDieuTri ct = new ChiTietDieuTri("", dv.getMaDV(), dv.getTenDV(), txtViTriRangChon.getText().trim(), sl, dv.getDonGia(), tt);
         listCTDT.add(ct);
 
-        modelDV.addRow(new Object[]{
-                dv.getTenDV(),
-                txtViTriRang.getText().trim(),
-                sl,
-                FormatUtil.formatMoney(dv.getDonGia()),
-                FormatUtil.formatMoney(thanhTien)
-        });
-    }
+        modelDV.addRow(new Object[]{dv.getTenDV(), txtViTriRangChon.getText().trim(), sl, FormatUtil.formatMoney(tt)});
 
-    private void xuLyThemThuoc() {
-        String ten = txtTenThuoc.getText().trim();
-        if (ten.isEmpty()) return;
-        int sl = (int) spSoLuongThuoc.getValue();
-        String dvt = txtDVTThuoc.getText().trim();
-        String lieu = txtLieuDung.getText().trim();
-
-        ChiTietDonThuoc ct = new ChiTietDonThuoc("", ten, dvt, sl, lieu);
-        listThuoc.add(ct);
-
-        modelThuoc.addRow(new Object[]{ten, dvt, sl, lieu});
+        double tong = 0;
+        for (ChiTietDieuTri c : listCTDT) tong += c.getThanhTien();
+        lblTongTamTinh.setText("Tổng tạm tính: " + FormatUtil.formatMoney(tong));
     }
 
     private void xuLyLuuCaKham() {
         LichHen lh = (LichHen) cboBenhNhanCho.getSelectedItem();
         if (lh == null) {
             JOptionPane.showMessageDialog(this, "Không có bệnh nhân nào trong hàng đợi khám!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        if (txtChanDoan.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập chẩn đoán của bác sĩ!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -262,17 +363,13 @@ public class PanelKhamBenh extends JPanel {
 
             boolean ok = phieuKhamDAO.luuCaKham(pk, listCTDT, txtLoiDan.getText().trim(), listThuoc);
             if (ok) {
-                JOptionPane.showMessageDialog(this, "Hoàn tất ca khám cho bệnh nhân " + lh.getTenBN() + "!\nHệ thống đã lưu hồ sơ và tự động xuất kho theo FEFO (RB12).", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-
+                JOptionPane.showMessageDialog(this, "Đã lưu kết quả điều trị cho " + lh.getTenBN() + "!\nHệ thống tự động trừ tồn kho theo FEFO (RB12).", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 listCTDT.clear();
                 listThuoc.clear();
                 modelDV.setRowCount(0);
                 modelThuoc.setRowCount(0);
-                txtTrieuChung.setText("");
-                txtChanDoan.setText("");
+                lblTongTamTinh.setText("Tổng tạm tính: 0 đ");
                 taiDanhSachHangDoi();
-            } else {
-                JOptionPane.showMessageDialog(this, "Lưu ca khám thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);

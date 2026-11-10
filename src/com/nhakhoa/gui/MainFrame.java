@@ -6,16 +6,13 @@ import com.nhakhoa.util.UITheme;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class MainFrame extends JFrame {
     private TaiKhoan currentUser;
     private JPanel pnlContent;
     private CardLayout cardLayout;
-    private JLabel lblPageTitle;
     private List<JButton> menuButtons = new ArrayList<>();
 
     private PanelTongQuan panelTongQuan;
@@ -29,10 +26,10 @@ public class MainFrame extends JFrame {
 
     public MainFrame(TaiKhoan user) {
         this.currentUser = user;
-        setTitle("Hệ Thống Quản Lý Phòng Khám Nha Khoa - Sài Gòn Dental");
+        setTitle("NHA KHOA - Hệ Thống Quản Lý Phòng Khám");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1320, 800);
-        setMinimumSize(new Dimension(1100, 700));
+        setSize(1360, 820);
+        setMinimumSize(new Dimension(1180, 720));
         setLocationRelativeTo(null);
 
         initUI();
@@ -42,66 +39,55 @@ public class MainFrame extends JFrame {
         JPanel pnlRoot = new JPanel(new BorderLayout());
         pnlRoot.setBackground(UITheme.BG_MAIN);
 
-        // ==================== SIDEBAR TRÁI ====================
+        // ==================== SIDEBAR TRẮNG HIỆN ĐẠI (Theo Mockup) ====================
         JPanel pnlSidebar = new JPanel(new BorderLayout());
-        pnlSidebar.setBackground(new Color(15, 23, 42)); // Slate 900
-        pnlSidebar.setPreferredSize(new Dimension(240, 0));
-        pnlSidebar.setBorder(new EmptyBorder(16, 12, 16, 12));
+        pnlSidebar.setBackground(UITheme.SIDEBAR_BG);
+        pnlSidebar.setPreferredSize(new Dimension(220, 0));
+        pnlSidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, UITheme.BORDER_COLOR));
 
-        // 1. Logo & Thương hiệu
-        JPanel pnlBrand = new JPanel(new BorderLayout(0, 4));
-        pnlBrand.setOpaque(false);
-        pnlBrand.setBorder(new EmptyBorder(6, 8, 16, 8));
-
-        JLabel lblBrandName = new JLabel("SÀI GÒN DENTAL");
-        lblBrandName.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblBrandName.setForeground(Color.WHITE);
-
-        JLabel lblBrandSub = new JLabel("Phần mềm quản lý phòng khám");
-        lblBrandSub.setFont(UITheme.FONT_SMALL);
-        lblBrandSub.setForeground(new Color(148, 163, 184));
-
-        pnlBrand.add(lblBrandName, BorderLayout.NORTH);
-        pnlBrand.add(lblBrandSub, BorderLayout.CENTER);
-
-        // 2. User Info Card
-        JPanel pnlUser = new JPanel(new BorderLayout(8, 4));
-        pnlUser.setBackground(new Color(30, 41, 59));
-        pnlUser.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(51, 65, 85), 1, true),
-                new EmptyBorder(10, 12, 10, 12)
-        ));
-
-        JPanel pnlUserText = new JPanel(new GridLayout(2, 1, 0, 2));
-        pnlUserText.setOpaque(false);
-
-        JLabel lblUserName = new JLabel(currentUser.getHoTen());
-        lblUserName.setFont(UITheme.FONT_BOLD);
-        lblUserName.setForeground(Color.WHITE);
-
-        JLabel lblUserRole = new JLabel("Vai trò: " + currentUser.getTenVaiTro());
-        lblUserRole.setFont(UITheme.FONT_SMALL);
-        lblUserRole.setForeground(UITheme.PRIMARY_LIGHT);
-
-        pnlUserText.add(lblUserName);
-        pnlUserText.add(lblUserRole);
-
-        pnlUser.add(pnlUserText, BorderLayout.CENTER);
-
-        JPanel pnlSidebarTop = new JPanel(new BorderLayout(0, 12));
+        // 1. Logo & Cơ sở
+        JPanel pnlSidebarTop = new JPanel(new BorderLayout(0, 10));
         pnlSidebarTop.setOpaque(false);
-        pnlSidebarTop.add(pnlBrand, BorderLayout.NORTH);
-        pnlSidebarTop.add(pnlUser, BorderLayout.CENTER);
+        pnlSidebarTop.setBorder(new EmptyBorder(18, 16, 12, 16));
 
-        // 3. Navigation Menu Items
-        JPanel pnlNav = new JPanel(new GridLayout(9, 1, 0, 6));
+        JPanel pnlLogoBox = new JPanel(new BorderLayout(0, 2));
+        pnlLogoBox.setOpaque(false);
+        JLabel lblLogoText = new JLabel("NHA KHOA");
+        lblLogoText.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        lblLogoText.setForeground(UITheme.PRIMARY);
+
+        JLabel lblLogoSub = new JLabel("HỆ THỐNG QUẢN TRỊ");
+        lblLogoSub.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        lblLogoSub.setForeground(UITheme.TEXT_MUTED);
+
+        pnlLogoBox.add(lblLogoText, BorderLayout.NORTH);
+        pnlLogoBox.add(lblLogoSub, BorderLayout.CENTER);
+
+        // Clinic Branch Chip
+        JPanel pnlBranch = new JPanel(new BorderLayout(4, 0));
+        pnlBranch.setBackground(new Color(248, 250, 252));
+        pnlBranch.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(6, 10, 6, 10)
+        ));
+        JLabel lblBranch = new JLabel("Cơ sở chính - TP. HCM");
+        lblBranch.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblBranch.setForeground(UITheme.TEXT_DARK);
+        pnlBranch.add(lblBranch, BorderLayout.CENTER);
+
+        pnlSidebarTop.add(pnlLogoBox, BorderLayout.NORTH);
+        pnlSidebarTop.add(pnlBranch, BorderLayout.CENTER);
+
+        // 2. Navigation Items
+        JPanel pnlNav = new JPanel(new GridLayout(8, 1, 0, 4));
         pnlNav.setOpaque(false);
-        pnlNav.setBorder(new EmptyBorder(14, 0, 0, 0));
+        pnlNav.setBorder(new EmptyBorder(8, 10, 0, 10));
 
         cardLayout = new CardLayout();
         pnlContent = new JPanel(cardLayout);
         pnlContent.setBackground(UITheme.BG_MAIN);
 
+        // Khởi tạo các panels
         panelTongQuan = new PanelTongQuan();
         panelBenhNhan = new PanelBenhNhan();
         panelLichHen = new PanelLichHen();
@@ -112,79 +98,121 @@ public class MainFrame extends JFrame {
         panelThongKe = new PanelThongKe();
 
         pnlContent.add(panelTongQuan, "TONG_QUAN");
-        pnlContent.add(panelBenhNhan, "BENH_NHAN");
         pnlContent.add(panelLichHen, "LICH_HEN");
+        pnlContent.add(panelBenhNhan, "BENH_NHAN");
         pnlContent.add(panelKhamBenh, "KHAM_BENH");
         pnlContent.add(panelHoaDon, "HOA_DON");
         pnlContent.add(panelKhoVatTu, "KHO_VAT_TU");
         pnlContent.add(panelDichVu, "DICH_VU");
         pnlContent.add(panelThongKe, "THONG_KE");
 
-        // Các nút phân quyền RBAC
+        // RBAC Permissions
         boolean isQL = currentUser.isQuanLy();
         boolean isLT = currentUser.isLetan();
         boolean isBS = currentUser.isBacSi();
         boolean isKho = currentUser.isKho();
 
-        pnlNav.add(taoNutNav("Tổng quan hệ thống", "TONG_QUAN", "BẢNG TỔNG QUAN ĐIỀU HÀNH"));
-        if (isQL || isLT || isBS) pnlNav.add(taoNutNav("Hồ sơ bệnh nhân", "BENH_NHAN", "QUẢN LÝ HỒ SƠ BỆNH NHÂN"));
-        if (isQL || isLT || isBS) pnlNav.add(taoNutNav("Lịch hẹn khám", "LICH_HEN", "QUẢN LÝ LỊCH HẸN & TIẾP NHẬN BỆNH NHÂN"));
-        if (isQL || isBS) pnlNav.add(taoNutNav("Khám & Điều trị", "KHAM_BENH", "KHÁM BỆNH, CHỈ ĐỊNH DỊCH VỤ & KÊ ĐƠN THUỐC"));
-        if (isQL || isLT) pnlNav.add(taoNutNav("Hóa đơn & Công nợ", "HOA_DON", "THANH TOÁN HÓA ĐƠN & SỔ NỢ TRẢ GÓP"));
-        if (isQL || isKho) pnlNav.add(taoNutNav("Kho vật tư (FEFO)", "KHO_VAT_TU", "QUẢN LÝ KHO & THEO DÕI HẠN DÙNG FEFO"));
-        if (isQL) pnlNav.add(taoNutNav("Bảng giá dịch vụ", "DICH_VU", "DANH MỤC THỦ THUẬT & BẢNG GIÁ NIÊM YẾT"));
-        if (isQL) pnlNav.add(taoNutNav("Báo cáo thống kê", "THONG_KE", "BÁO CÁO DOANH THU & CHỈ SỐ HOẠT ĐỘNG"));
+        pnlNav.add(taoNutNav("Tổng quan", "TONG_QUAN"));
+        if (isQL || isLT || isBS) pnlNav.add(taoNutNav("Lịch hẹn", "LICH_HEN"));
+        if (isQL || isLT || isBS) pnlNav.add(taoNutNav("Bệnh nhân", "BENH_NHAN"));
+        if (isQL || isBS) pnlNav.add(taoNutNav("Khám & điều trị", "KHAM_BENH"));
+        if (isQL || isLT) pnlNav.add(taoNutNav("Thanh toán & công nợ", "HOA_DON"));
+        if (isQL || isKho) pnlNav.add(taoNutNav("Kho vật tư", "KHO_VAT_TU"));
+        if (isQL) pnlNav.add(taoNutNav("Bảng giá dịch vụ", "DICH_VU"));
+        if (isQL) pnlNav.add(taoNutNav("Báo cáo & thống kê", "THONG_KE"));
 
-        // 4. Logout Button ở đáy Sidebar
+        // 3. Sidebar Bottom: Help Card & Logout
+        JPanel pnlSidebarBottom = new JPanel(new BorderLayout(0, 10));
+        pnlSidebarBottom.setOpaque(false);
+        pnlSidebarBottom.setBorder(new EmptyBorder(0, 12, 16, 12));
+
+        JPanel pnlHelpCard = new JPanel(new BorderLayout(0, 4));
+        pnlHelpCard.setBackground(new Color(240, 253, 250)); // Teal 50
+        pnlHelpCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(204, 251, 241), 1, true),
+                new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        JLabel lblH1 = new JLabel("Cần hỗ trợ?");
+        lblH1.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblH1.setForeground(UITheme.PRIMARY);
+
+        JLabel lblH2 = new JLabel("Xem hướng dẫn sử dụng");
+        lblH2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblH2.setForeground(UITheme.TEXT_MUTED);
+
+        pnlHelpCard.add(lblH1, BorderLayout.NORTH);
+        pnlHelpCard.add(lblH2, BorderLayout.CENTER);
+
         JButton btnLogout = new JButton("Đăng xuất");
-        btnLogout.setFont(UITheme.FONT_BOLD);
-        btnLogout.setForeground(new Color(248, 113, 113));
-        btnLogout.setBackground(new Color(30, 41, 59));
+        btnLogout.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnLogout.setForeground(new Color(220, 38, 38));
+        btnLogout.setBackground(Color.WHITE);
         btnLogout.setFocusPainted(false);
         btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnLogout.putClientProperty("JButton.buttonType", "roundRect");
-        btnLogout.setBorder(new EmptyBorder(10, 14, 10, 14));
+        btnLogout.setBorder(BorderFactory.createLineBorder(new Color(254, 202, 202), 1, true));
+        btnLogout.setPreferredSize(new Dimension(0, 32));
         btnLogout.addActionListener(e -> xuLyDangXuat());
+
+        pnlSidebarBottom.add(pnlHelpCard, BorderLayout.NORTH);
+        pnlSidebarBottom.add(btnLogout, BorderLayout.SOUTH);
 
         pnlSidebar.add(pnlSidebarTop, BorderLayout.NORTH);
         pnlSidebar.add(pnlNav, BorderLayout.CENTER);
-        pnlSidebar.add(btnLogout, BorderLayout.SOUTH);
+        pnlSidebar.add(pnlSidebarBottom, BorderLayout.SOUTH);
 
-        // ==================== HEADER TRÊN ====================
+        // ==================== TOP HEADER (Thanh tìm kiếm & Profile) ====================
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
         pnlHeader.setPreferredSize(new Dimension(0, 56));
         pnlHeader.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, UITheme.BORDER_COLOR),
-                new EmptyBorder(10, 24, 10, 24)
+                new EmptyBorder(8, 20, 8, 24)
         ));
 
-        lblPageTitle = new JLabel("BẢNG TỔNG QUAN ĐIỀU HÀNH");
-        lblPageTitle.setFont(UITheme.FONT_TITLE);
-        lblPageTitle.setForeground(UITheme.TEXT_DARK);
+        // Ô tìm kiếm toàn hệ thống
+        JTextField txtGlobalSearch = new JTextField();
+        txtGlobalSearch.setPreferredSize(new Dimension(380, 36));
+        txtGlobalSearch.setFont(UITheme.FONT_REGULAR);
+        txtGlobalSearch.putClientProperty("JTextField.placeholderText", "Tìm bệnh nhân, số điện thoại, hóa đơn...");
+        txtGlobalSearch.putClientProperty("JComponent.roundRect", true);
 
-        JPanel pnlHeaderRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 4));
+        // Profile user bên phải
+        JPanel pnlHeaderRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 2));
         pnlHeaderRight.setOpaque(false);
 
-        JLabel lblDate = new JLabel(new SimpleDateFormat("EEEE, dd/MM/yyyy").format(new Date()));
-        lblDate.setFont(UITheme.FONT_REGULAR);
-        lblDate.setForeground(UITheme.TEXT_MUTED);
+        JPanel pnlUserBadge = new JPanel(new BorderLayout(8, 0));
+        pnlUserBadge.setOpaque(false);
 
-        JLabel lblStatus = new JLabel("CSDL Đã kết nối");
-        lblStatus.setFont(UITheme.FONT_SMALL);
-        lblStatus.setForeground(new Color(16, 185, 129));
-        lblStatus.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(167, 243, 208), 1, true),
-                new EmptyBorder(3, 8, 3, 8)
-        ));
+        JPanel pnlUserText = new JPanel(new GridLayout(2, 1, 0, 1));
+        pnlUserText.setOpaque(false);
+        JLabel lblUName = new JLabel(currentUser.getHoTen(), SwingConstants.RIGHT);
+        lblUName.setFont(UITheme.FONT_BOLD);
+        lblUName.setForeground(UITheme.TEXT_DARK);
 
-        pnlHeaderRight.add(lblDate);
-        pnlHeaderRight.add(lblStatus);
+        JLabel lblURole = new JLabel(currentUser.getTenVaiTro(), SwingConstants.RIGHT);
+        lblURole.setFont(UITheme.FONT_TINY);
+        lblURole.setForeground(UITheme.TEXT_MUTED);
 
-        pnlHeader.add(lblPageTitle, BorderLayout.WEST);
+        pnlUserText.add(lblUName);
+        pnlUserText.add(lblURole);
+
+        JLabel lblAvatarCircle = new JLabel(" " + currentUser.getHoTen().substring(0, 1) + " ", JLabel.CENTER);
+        lblAvatarCircle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblAvatarCircle.setOpaque(true);
+        lblAvatarCircle.setBackground(UITheme.PRIMARY_LIGHT);
+        lblAvatarCircle.setForeground(UITheme.PRIMARY);
+        lblAvatarCircle.setBorder(BorderFactory.createLineBorder(new Color(153, 246, 228), 1, true));
+
+        pnlUserBadge.add(pnlUserText, BorderLayout.CENTER);
+        pnlUserBadge.add(lblAvatarCircle, BorderLayout.EAST);
+
+        pnlHeaderRight.add(pnlUserBadge);
+
+        pnlHeader.add(txtGlobalSearch, BorderLayout.WEST);
         pnlHeader.add(pnlHeaderRight, BorderLayout.EAST);
 
-        // ==================== GHÉP LAYOUT ====================
+        // ==================== MAIN CONTENT ====================
         JPanel pnlMainArea = new JPanel(new BorderLayout());
         pnlMainArea.add(pnlHeader, BorderLayout.NORTH);
         pnlMainArea.add(pnlContent, BorderLayout.CENTER);
@@ -194,35 +222,40 @@ public class MainFrame extends JFrame {
 
         setContentPane(pnlRoot);
 
+        // Chọn tab đầu tiên mặc định
         if (!menuButtons.isEmpty()) {
             menuButtons.get(0).doClick();
         }
     }
 
-    private JButton taoNutNav(String text, String cardName, String pageTitle) {
+    private JButton taoNutNav(String text, String cardName) {
         JButton btn = new JButton(text);
-        btn.setFont(UITheme.FONT_BOLD);
-        btn.setForeground(new Color(203, 213, 225));
-        btn.setBackground(new Color(15, 23, 42));
+        btn.setFont(UITheme.FONT_REGULAR);
+        btn.setForeground(new Color(71, 85, 105));
+        btn.setBackground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.putClientProperty("JButton.buttonType", "roundRect");
-        btn.setBorder(new EmptyBorder(10, 14, 10, 14));
+        btn.setBorder(new EmptyBorder(8, 12, 8, 12));
 
         btn.addActionListener(e -> {
             cardLayout.show(pnlContent, cardName);
-            lblPageTitle.setText(pageTitle);
 
+            // Active tab style
             for (JButton b : menuButtons) {
-                b.setBackground(new Color(15, 23, 42));
-                b.setForeground(new Color(203, 213, 225));
+                b.setBackground(Color.WHITE);
+                b.setForeground(new Color(71, 85, 105));
+                b.setFont(UITheme.FONT_REGULAR);
             }
-            btn.setBackground(UITheme.PRIMARY);
-            btn.setForeground(Color.WHITE);
+            btn.setBackground(UITheme.PRIMARY_LIGHT);
+            btn.setForeground(UITheme.PRIMARY);
+            btn.setFont(UITheme.FONT_BOLD);
 
+            // Reload data
             if ("TONG_QUAN".equals(cardName)) panelTongQuan.taiDuLieu();
             else if ("LICH_HEN".equals(cardName)) panelLichHen.taiDuLieu();
+            else if ("BENH_NHAN".equals(cardName)) panelBenhNhan.taiDuLieu();
             else if ("KHAM_BENH".equals(cardName)) panelKhamBenh.taiDanhSachHangDoi();
             else if ("HOA_DON".equals(cardName)) panelHoaDon.taiDuLieu();
             else if ("KHO_VAT_TU".equals(cardName)) panelKhoVatTu.taiDuLieu();
