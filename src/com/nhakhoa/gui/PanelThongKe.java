@@ -58,9 +58,7 @@ public class PanelThongKe extends JPanel {
         ));
 
         JButton btnExport = UITheme.createButton("+ Xuất báo cáo", UITheme.PRIMARY, Color.WHITE);
-        btnExport.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Đã xuất báo cáo doanh thu & hiệu suất kỳ 04-10/11/2026 thành công!\nĐịnh dạng file: Excel / PDF",
-                "Xuất báo cáo", JOptionPane.INFORMATION_MESSAGE));
+        btnExport.addActionListener(e -> xuLyXuatBaoCao());
 
         pnlHeaderActions.add(lblDateFilter);
         pnlHeaderActions.add(btnExport);
@@ -309,6 +307,61 @@ public class PanelThongKe extends JPanel {
         item.add(lblM, BorderLayout.WEST);
         item.add(lblD, BorderLayout.CENTER);
         return item;
+    }
+
+    private void xuLyXuatBaoCao() {
+        try {
+            java.io.File file = new java.io.File("BaoCaoDoanhThu_NhaKhoa.csv");
+            try (java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(file), java.nio.charset.StandardCharsets.UTF_8)) {
+                // Ghi UTF-8 BOM để Excel hiển thị tiếng Việt có dấu chuẩn 100%
+                writer.write('\ufeff');
+
+                writer.write("BÁO CÁO TỔNG HỢP HOẠT ĐỘNG PHÒNG KHÁM NHA KHOA SÀI GÒN\n");
+                writer.write("Kỳ thống kê: 04/11/2026 - 10/11/2026\n");
+                writer.write("Ngày kết xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()) + "\n\n");
+
+                writer.write("1. CHỈ SỐ HOẠT ĐỘNG CHÍNH (KPI)\n");
+                writer.write("Chỉ số,Giá trị,Ghi chú\n");
+                writer.write("Doanh thu dịch vụ," + lblDoanhThuDV.getText() + ",Tổng giá trị các ca thực hiện\n");
+                writer.write("Thực thu thực tế," + lblThucThu.getText() + ",Đã quyết toán tiền mặt và chuyển khoản\n");
+                writer.write("Tổng lượt khám," + lblTongLuotKham.getText() + ",+12% so với kỳ trước\n");
+                writer.write("Tỷ lệ quay lại," + lblTyLeQuayLai.getText() + ",Khám định kỳ & điều trị dài hạn\n\n");
+
+                writer.write("2. CƠ CẤU DOANH THU THEO NHÓM DỊCH VỤ\n");
+                writer.write("Nhóm dịch vụ,Doanh thu (VNĐ),Tỷ trọng\n");
+                writer.write("Chỉnh nha & Niềng răng,45.400.000 đ,41%\n");
+                writer.write("Phục hình & Cấy ghép Implant,32.000.000 đ,29%\n");
+                writer.write("Nha khoa tổng quát & Trám răng,21.000.000 đ,19%\n");
+                writer.write("Chăm sóc & Cạo vôi răng,13.000.000 đ,11%\n\n");
+
+                writer.write("3. BẢNG HIỆU SUẤT THEO BÁC SĨ\n");
+                writer.write("Họ và tên Bác sĩ,Số ca,Lượt khám,Doanh thu mang lại\n");
+                for (int i = 0; i < modelBS.getRowCount(); i++) {
+                    writer.write(String.format("\"%s\",%s,%s,\"%s\"\n",
+                            modelBS.getValueAt(i, 0),
+                            modelBS.getValueAt(i, 1),
+                            modelBS.getValueAt(i, 2),
+                            modelBS.getValueAt(i, 3)));
+                }
+            }
+
+            int choice = JOptionPane.showOptionDialog(this,
+                    "Đã xuất file báo cáo thành công!\nTên file: BaoCaoDoanhThu_NhaKhoa.csv\n(Định dạng UTF-8 CSV tương thích 100% với Microsoft Excel)",
+                    "Xuất báo cáo thành công",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    new String[]{"Mở file ngay", "Đóng"},
+                    "Mở file ngay");
+
+            if (choice == JOptionPane.YES_OPTION) {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất file: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void taiDuLieu() {

@@ -12,6 +12,30 @@ import java.util.List;
 
 public class BenhNhanDAO {
 
+    public BenhNhan getById(String maBN) {
+        String sql = "SELECT * FROM HO_SO_BENH_NHAN WHERE MaBN = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maBN);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new BenhNhan(
+                    rs.getString("MaBN"),
+                    rs.getString("HoTen"),
+                    rs.getDate("NgaySinh"),
+                    rs.getString("SoCCCD"),
+                    rs.getString("SoDienThoai"),
+                    rs.getString("TienSuBenh"),
+                    rs.getString("TinhTrang"),
+                    rs.getTimestamp("NgayTao")
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<BenhNhan> getAll() {
         List<BenhNhan> list = new ArrayList<>();
         String sql = "SELECT * FROM HO_SO_BENH_NHAN ORDER BY MaBN DESC";

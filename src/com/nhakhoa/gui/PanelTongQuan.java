@@ -24,6 +24,7 @@ public class PanelTongQuan extends JPanel {
 
     private ThongKeDAO thongKeDAO = new ThongKeDAO();
     private LichHenDAO lichHenDAO = new LichHenDAO();
+    private List<LichHen> cachedListLich = new java.util.ArrayList<>();
 
     public PanelTongQuan() {
         setLayout(new BorderLayout(0, 16));
@@ -111,6 +112,30 @@ public class PanelTongQuan extends JPanel {
         tblLichHenSapToi = new JTable(modelLichHen);
         UITheme.formatTable(tblLichHenSapToi);
         tblLichHenSapToi.getColumnModel().getColumn(4).setCellRenderer(new UITheme.StatusBadgeRenderer());
+
+        tblLichHenSapToi.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int row = tblLichHenSapToi.getSelectedRow();
+                if (row >= 0 && row < cachedListLich.size()) {
+                    LichHen lh = cachedListLich.get(row);
+                    if (!"DA_KHAM".equals(lh.getTinhTrang()) && !"DA_HUY".equals(lh.getTinhTrang())) {
+                        int opt = JOptionPane.showConfirmDialog(PanelTongQuan.this,
+                                "Tiếp nhận bệnh nhân [" + lh.getTenBN() + "] vào phòng khám ngay?",
+                                "Tiếp nhận bệnh nhân", JOptionPane.YES_NO_OPTION);
+                        if (opt == JOptionPane.YES_OPTION) {
+                            try {
+                                lichHenDAO.doiTrangThai(lh.getMaLichHen(), "DA_DEN");
+                                JOptionPane.showMessageDialog(PanelTongQuan.this, "Đã tiếp nhận bệnh nhân thành công! Hồ sơ đã được chuyển đến bác sĩ.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                                taiDuLieu();
+                            } catch (Exception ex) {
+                                JOptionPane.showMessageDialog(PanelTongQuan.this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         pnlLeftCard.add(pnlLeftHeader, BorderLayout.NORTH);
         pnlLeftCard.add(new JScrollPane(tblLichHenSapToi), BorderLayout.CENTER);
@@ -204,8 +229,8 @@ public class PanelTongQuan extends JPanel {
         lblCongNo.setText("32.800.000 đ");
 
         modelLichHen.setRowCount(0);
-        List<LichHen> list = lichHenDAO.getAll();
-        for (LichHen lh : list) {
+        cachedListLich = lichHenDAO.getAll();
+        for (LichHen lh : cachedListLich) {
             String gio = FormatUtil.formatShortTime(lh.getGioBatDau()) + " - " + FormatUtil.formatShortTime(lh.getGioKetThuc());
             modelLichHen.addRow(new Object[]{
                     gio,

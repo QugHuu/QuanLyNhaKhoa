@@ -20,6 +20,7 @@ public class PanelKhoVatTu extends JPanel {
 
     private KhoDAO khoDAO = new KhoDAO();
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    private List<LoVatTu> cachedListLo = new java.util.ArrayList<>();
 
     public PanelKhoVatTu() {
         setLayout(new BorderLayout(0, 14));
@@ -199,7 +200,7 @@ public class PanelKhoVatTu extends JPanel {
     }
 
     public void taiDuLieu() {
-        List<LoVatTu> listLo = khoDAO.getAllLoVatTu();
+        cachedListLo = khoDAO.getAllLoVatTu();
         List<VatTu> listVT = khoDAO.getAllVatTu();
 
         lblTotalItems.setText(String.valueOf(listVT.size()) + " loại");
@@ -208,7 +209,7 @@ public class PanelKhoVatTu extends JPanel {
         lblExpired.setText("01 lô");
 
         modelLo.setRowCount(0);
-        for (LoVatTu lo : listLo) {
+        for (LoVatTu lo : cachedListLo) {
             modelLo.addRow(new Object[]{
                     lo.getMaLo(),
                     lo.getTenVatTu(),
@@ -223,19 +224,30 @@ public class PanelKhoVatTu extends JPanel {
 
     private void xuLyXuatKhoNhanh() {
         int row = tblLoVatTu.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 dòng vật tư cần xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        if (row < 0 || row >= cachedListLo.size()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 lô vật tư trong bảng cần xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        String input = JOptionPane.showInputDialog(this, "Nhập số lượng xuất thủ công:", "Xuất kho", JOptionPane.QUESTION_MESSAGE);
+        LoVatTu selected = cachedListLo.get(row);
+        String input = JOptionPane.showInputDialog(this, 
+                "Xuất kho vật tư: " + selected.getTenVatTu() + "\n(Hệ thống tự động áp dụng FEFO - trừ lô có hạn sử dụng gần nhất trước)\n\nNhập số lượng xuất (" + selected.getDonViTinh() + "):", 
+                "Xuất kho FEFO (RB12)", JOptionPane.QUESTION_MESSAGE);
         if (input != null && !input.trim().isEmpty()) {
             try {
                 int sl = Integer.parseInt(input.trim());
-                String maVT = modelLo.getValueAt(row, 0).toString(); // or get vat tu
-                JOptionPane.showMessageDialog(this, "Đã ghi nhận xuất " + sl + " đơn vị theo FEFO!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                taiDuLieu();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Số lượng không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                if (sl <= 0) {
+                    JOptionPane.showMessageDialog(this, "Số lượng xuất phải lớn hơn 0!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                boolean ok = khoDAO.xuatKhoFEFO(selected.getMaVatTu(), sl);
+                if (ok) {
+                    JOptionPane.showMessageDialog(this, "Đã xuất " + sl + " " + selected.getDonViTinh() + " [" + selected.getTenVatTu() + "] thành công!\nCác lô đã được tự động trừ tồn kho theo thứ tự FEFO (Hạn gần trừ trước).", "Thành công (RB12)", JOptionPane.INFORMATION_MESSAGE);
+                    taiDuLieu();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể xuất kho: Số lượng khả dụng không đủ!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Số lượng không hợp lệ, vui lòng nhập số nguyên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

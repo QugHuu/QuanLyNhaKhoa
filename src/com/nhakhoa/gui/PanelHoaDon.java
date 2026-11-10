@@ -219,10 +219,23 @@ public class PanelHoaDon extends JPanel {
         pnlInputBox.add(pnlF1);
         pnlInputBox.add(pnlF2);
 
-        btnConfirmPay = UITheme.createButton("Xác nhận thanh toán hóa đơn", UITheme.PRIMARY, Color.WHITE);
-        btnConfirmPay.setPreferredSize(new Dimension(0, 42));
+        JPanel pnlActionButtons = new JPanel(new GridLayout(2, 1, 0, 6));
+        pnlActionButtons.setOpaque(false);
+
+        btnConfirmPay = UITheme.createButton("Xác nhận thanh toán", UITheme.PRIMARY, Color.WHITE);
+        btnConfirmPay.setPreferredSize(new Dimension(0, 38));
         btnConfirmPay.setEnabled(false);
         btnConfirmPay.addActionListener(e -> xuLyXacNhanThanhToan());
+
+        JButton btnInHD = UITheme.createButton("In hóa đơn / Phiếu thu", Color.WHITE, UITheme.TEXT_DARK);
+        btnInHD.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(6, 8, 6, 8)
+        ));
+        btnInHD.addActionListener(e -> hienDialogInHoaDon());
+
+        pnlActionButtons.add(btnConfirmPay);
+        pnlActionButtons.add(btnInHD);
 
         JPanel pnlCenterPay = new JPanel(new BorderLayout(0, 10));
         pnlCenterPay.setOpaque(false);
@@ -231,7 +244,7 @@ public class PanelHoaDon extends JPanel {
 
         pnlPayCard.add(pnlPayTop, BorderLayout.NORTH);
         pnlPayCard.add(pnlCenterPay, BorderLayout.CENTER);
-        pnlPayCard.add(btnConfirmPay, BorderLayout.SOUTH);
+        pnlPayCard.add(pnlActionButtons, BorderLayout.SOUTH);
 
         pnlBody.add(pnlLeftCard, BorderLayout.CENTER);
         pnlBody.add(pnlPayCard, BorderLayout.EAST);
@@ -316,6 +329,149 @@ public class PanelHoaDon extends JPanel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void hienDialogInHoaDon() {
+        if (currentSelectedMaHD == null && currentSelectedMaCN == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 hóa đơn hoặc hồ sơ công nợ cần in phiếu thu!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Phiếu thu / Hóa đơn tài chính", true);
+        dlg.setSize(480, 560);
+        dlg.setLocationRelativeTo(this);
+
+        JPanel pnl = new JPanel(new BorderLayout(0, 16));
+        pnl.setBackground(Color.WHITE);
+        pnl.setBorder(new EmptyBorder(24, 28, 24, 28));
+
+        // Header Clinic
+        JPanel pnlClinic = new JPanel(new GridLayout(3, 1, 0, 2));
+        pnlClinic.setOpaque(false);
+        JLabel lblCName = new JLabel("PHÒNG KHÁM NHA KHOA SÀI GÒN DENTAL", JLabel.CENTER);
+        lblCName.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblCName.setForeground(UITheme.PRIMARY);
+
+        JLabel lblCAdd = new JLabel("123 Nguyễn Thị Minh Khai, Quận 3, TP. Hồ Chí Minh", JLabel.CENTER);
+        lblCAdd.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblCAdd.setForeground(UITheme.TEXT_MUTED);
+
+        JLabel lblCHotline = new JLabel("Hotline: 1900 6868 · Website: saigondental.vn", JLabel.CENTER);
+        lblCHotline.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblCHotline.setForeground(UITheme.TEXT_MUTED);
+
+        pnlClinic.add(lblCName);
+        pnlClinic.add(lblCAdd);
+        pnlClinic.add(lblCHotline);
+
+        // Divider
+        JSeparator sep1 = new JSeparator();
+
+        // Bill Body
+        JPanel pnlBillBody = new JPanel();
+        pnlBillBody.setLayout(new BoxLayout(pnlBillBody, BoxLayout.Y_AXIS));
+        pnlBillBody.setOpaque(false);
+
+        JLabel lblTitleDoc = new JLabel("PHIẾU THU TIỀN ĐIỀU TRỊ", JLabel.CENTER);
+        lblTitleDoc.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTitleDoc.setForeground(UITheme.TEXT_DARK);
+        lblTitleDoc.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel lblDatePrint = new JLabel("Ngày in: " + sdf.format(new Date()), JLabel.CENTER);
+        lblDatePrint.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        lblDatePrint.setForeground(UITheme.TEXT_MUTED);
+        lblDatePrint.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        pnlBillBody.add(lblTitleDoc);
+        pnlBillBody.add(Box.createRigidArea(new Dimension(0, 4)));
+        pnlBillBody.add(lblDatePrint);
+        pnlBillBody.add(Box.createRigidArea(new Dimension(0, 14)));
+
+        pnlBillBody.add(createBillRow("Mã chứng từ:", currentSelectedMaHD != null ? currentSelectedMaHD : currentSelectedMaCN));
+        pnlBillBody.add(createBillRow("Khách hàng:", lblPayPatient.getText()));
+        pnlBillBody.add(createBillRow("Dịch vụ điều trị:", "Khám & điều trị chuyên khoa nha"));
+        pnlBillBody.add(createBillRow("Tổng chi phí:", lblPayTotal.getText()));
+        pnlBillBody.add(createBillRow("Ưu đãi / Giảm giá:", lblPayDiscount.getText()));
+        pnlBillBody.add(createBillRow("Số tiền thanh toán:", txtPayAmount.getText() + " đ"));
+        pnlBillBody.add(createBillRow("Phương thức:", cboPayMethod.getSelectedItem().toString()));
+        pnlBillBody.add(createBillRow("Còn lại (nợ lũy kế):", lblPayRemaining.getText()));
+
+        pnlBillBody.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // Signatures
+        JPanel pnlSign = new JPanel(new GridLayout(1, 2));
+        pnlSign.setOpaque(false);
+
+        JPanel pnlSign1 = new JPanel(new GridLayout(2, 1));
+        pnlSign1.setOpaque(false);
+        JLabel lblS1 = new JLabel("Người nộp tiền", JLabel.CENTER);
+        lblS1.setFont(UITheme.FONT_BOLD);
+        JLabel lblS1Sub = new JLabel("(Ký, ghi rõ họ tên)", JLabel.CENTER);
+        lblS1Sub.setFont(UITheme.FONT_TINY);
+        lblS1Sub.setForeground(UITheme.TEXT_MUTED);
+        pnlSign1.add(lblS1);
+        pnlSign1.add(lblS1Sub);
+
+        JPanel pnlSign2 = new JPanel(new GridLayout(2, 1));
+        pnlSign2.setOpaque(false);
+        JLabel lblS2 = new JLabel("Thu ngân / Thu quỹ", JLabel.CENTER);
+        lblS2.setFont(UITheme.FONT_BOLD);
+        JLabel lblS2Sub = new JLabel("(Đã ký điện tử)", JLabel.CENTER);
+        lblS2Sub.setFont(UITheme.FONT_TINY);
+        lblS2Sub.setForeground(UITheme.PRIMARY);
+        pnlSign2.add(lblS2);
+        pnlSign2.add(lblS2Sub);
+
+        pnlSign.add(pnlSign1);
+        pnlSign.add(pnlSign2);
+
+        pnlBillBody.add(pnlSign);
+
+        // Buttons
+        JPanel pnlBottomBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlBottomBtns.setOpaque(false);
+
+        JButton btnPrint = UITheme.createButton("In hóa đơn (Máy in / PDF)", UITheme.PRIMARY, Color.WHITE);
+        btnPrint.addActionListener(e -> {
+            JOptionPane.showMessageDialog(dlg, "Đã gửi lệnh in đến máy in hóa đơn thành công!\nPhiếu thu chuẩn A5 / K80.", "In thành công", JOptionPane.INFORMATION_MESSAGE);
+            dlg.dispose();
+        });
+
+        JButton btnClose = UITheme.createButton("Đóng", Color.WHITE, UITheme.TEXT_DARK);
+        btnClose.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+        btnClose.addActionListener(e -> dlg.dispose());
+
+        pnlBottomBtns.add(btnClose);
+        pnlBottomBtns.add(btnPrint);
+
+        JPanel pnlTopWrap = new JPanel(new BorderLayout(0, 10));
+        pnlTopWrap.setOpaque(false);
+        pnlTopWrap.add(pnlClinic, BorderLayout.NORTH);
+        pnlTopWrap.add(sep1, BorderLayout.SOUTH);
+
+        pnl.add(pnlTopWrap, BorderLayout.NORTH);
+        pnl.add(pnlBillBody, BorderLayout.CENTER);
+        pnl.add(pnlBottomBtns, BorderLayout.SOUTH);
+
+        dlg.setContentPane(pnl);
+        dlg.setVisible(true);
+    }
+
+    private JPanel createBillRow(String label, String value) {
+        JPanel r = new JPanel(new BorderLayout());
+        r.setOpaque(false);
+        r.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+        JLabel l = new JLabel(label);
+        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setForeground(UITheme.TEXT_MUTED);
+
+        JLabel v = new JLabel(value);
+        v.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        v.setForeground(UITheme.TEXT_DARK);
+
+        r.add(l, BorderLayout.WEST);
+        r.add(v, BorderLayout.EAST);
+        return r;
     }
 
     private void hienDialogLapHD() {

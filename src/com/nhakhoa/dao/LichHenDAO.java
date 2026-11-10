@@ -58,8 +58,8 @@ public class LichHenDAO {
                    + "FROM LICH_HEN lh "
                    + "JOIN HO_SO_BENH_NHAN bn ON lh.MaBN = bn.MaBN "
                    + "JOIN BAC_SI bs ON lh.MaBS = bs.MaBS "
-                   + "WHERE lh.TinhTrang = 'DA_DEN' "
-                   + "ORDER BY lh.SoThuTuCho ASC";
+                   + "WHERE lh.TinhTrang IN ('DA_DEN', 'CHO_KHAM', 'DANG_KHAM') "
+                   + "ORDER BY CASE WHEN lh.TinhTrang = 'DA_DEN' THEN 1 ELSE 2 END, lh.SoThuTuCho ASC";
 
         try (Connection conn = DBConnect.getConnection();
              Statement st = conn.createStatement();

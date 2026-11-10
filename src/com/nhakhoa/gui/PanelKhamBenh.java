@@ -1,5 +1,6 @@
 package com.nhakhoa.gui;
 
+import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.bus.LichHenBUS;
 import com.nhakhoa.dao.DichVuDAO;
 import com.nhakhoa.dao.PhieuKhamDAO;
@@ -30,6 +31,7 @@ public class PanelKhamBenh extends JPanel {
     private List<JButton> toothButtons = new ArrayList<>();
 
     private LichHenBUS lichHenBUS = new LichHenBUS();
+    private BenhNhanBUS benhNhanBUS = new BenhNhanBUS();
     private DichVuDAO dichVuDAO = new DichVuDAO();
     private PhieuKhamDAO phieuKhamDAO = new PhieuKhamDAO();
 
@@ -237,9 +239,22 @@ public class PanelKhamBenh extends JPanel {
         pnlThuocCard.setLayout(new BorderLayout(0, 8));
         pnlThuocCard.setPreferredSize(new Dimension(0, 200));
 
+        JPanel pnlThuocHeader = new JPanel(new BorderLayout());
+        pnlThuocHeader.setOpaque(false);
+
         JLabel lblThuocTitle = new JLabel("Kê đơn thuốc điều trị");
         lblThuocTitle.setFont(UITheme.FONT_SUBTITLE);
         lblThuocTitle.setForeground(UITheme.TEXT_DARK);
+
+        JButton btnThemThuoc = UITheme.createButton("+ Thêm thuốc", Color.WHITE, UITheme.TEXT_DARK);
+        btnThemThuoc.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(4, 8, 4, 8)
+        ));
+        btnThemThuoc.addActionListener(e -> hienDialogThemThuoc());
+
+        pnlThuocHeader.add(lblThuocTitle, BorderLayout.WEST);
+        pnlThuocHeader.add(btnThemThuoc, BorderLayout.EAST);
 
         String[] headersT = {"Tên thuốc", "SL", "Liều dùng"};
         modelThuoc = new DefaultTableModel(headersT, 0) {
@@ -249,7 +264,7 @@ public class PanelKhamBenh extends JPanel {
         tblDonThuoc = new JTable(modelThuoc);
         UITheme.formatTable(tblDonThuoc);
 
-        pnlThuocCard.add(lblThuocTitle, BorderLayout.NORTH);
+        pnlThuocCard.add(pnlThuocHeader, BorderLayout.NORTH);
         pnlThuocCard.add(new JScrollPane(tblDonThuoc), BorderLayout.CENTER);
 
         pnlRight.add(pnlDVCard, BorderLayout.CENTER);
@@ -314,11 +329,78 @@ public class PanelKhamBenh extends JPanel {
         LichHen lh = (LichHen) cboBenhNhanCho.getSelectedItem();
         if (lh != null) {
             lblPatientBadge.setText("  " + lh.getMaGhe() + " · Phòng khám chính  ");
-            lblAllergyNotice.setText("  Bệnh nhân: " + lh.getTenBN() + "  ");
+            BenhNhan bn = benhNhanBUS.getById(lh.getMaBN());
+            if (bn != null && bn.getTienSuBenh() != null && !bn.getTienSuBenh().trim().isEmpty()) {
+                lblAllergyNotice.setText("  Tiền sử/Dị ứng: " + bn.getTienSuBenh() + "  ");
+                lblAllergyNotice.setBackground(UITheme.WARNING_BG);
+                lblAllergyNotice.setForeground(UITheme.WARNING_TEXT);
+                lblAllergyNotice.setBorder(BorderFactory.createLineBorder(new Color(253, 230, 138), 1, true));
+            } else {
+                lblAllergyNotice.setText("  Tiền sử: Khỏe mạnh bình thường  ");
+                lblAllergyNotice.setBackground(UITheme.PRIMARY_LIGHT);
+                lblAllergyNotice.setForeground(UITheme.PRIMARY);
+                lblAllergyNotice.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+            }
         } else {
             lblPatientBadge.setText("  Chưa có bệnh nhân ở phòng chờ  ");
             lblAllergyNotice.setText("  Vui lòng tiếp nhận tại sảnh  ");
+            lblAllergyNotice.setBackground(new Color(241, 245, 249));
+            lblAllergyNotice.setForeground(UITheme.TEXT_MUTED);
+            lblAllergyNotice.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
         }
+    }
+
+    private void hienDialogThemThuoc() {
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Kê đơn thuốc điều trị", true);
+        dlg.setSize(400, 320);
+        dlg.setLocationRelativeTo(this);
+
+        JPanel pnl = new JPanel(new BorderLayout(0, 12));
+        pnl.setBackground(Color.WHITE);
+        pnl.setBorder(new EmptyBorder(16, 20, 16, 20));
+
+        JLabel lblT = new JLabel("CHỌN THUỐC ĐIỀU TRỊ");
+        lblT.setFont(UITheme.FONT_SUBTITLE);
+        lblT.setForeground(UITheme.PRIMARY);
+
+        JPanel pnlForm = new JPanel(new GridLayout(3, 1, 0, 8));
+        pnlForm.setOpaque(false);
+
+        JComboBox<String> cboThuoc = new JComboBox<>(new String[]{
+                "Amoxicillin 500mg (Kháng sinh)",
+                "Paracetamol 500mg (Giảm đau, hạ sốt)",
+                "Rodogyl (Kháng sinh răng miệng Spiramycin+Metronidazole)",
+                "Ibuprofen 400mg (Kháng viêm non-steroid)",
+                "Nước súc miệng Chlorhexidine 0.12% (Chai 250ml)"
+        });
+
+        JSpinner spSL = new JSpinner(new SpinnerNumberModel(10, 1, 100, 1));
+        JTextField txtLieu = new JTextField("Ngày uống 2 lần, mỗi lần 1 viên sau ăn no");
+
+        pnlForm.add(taoField("Loại thuốc:", cboThuoc));
+        pnlForm.add(taoField("Số lượng:", spSL));
+        pnlForm.add(taoField("Liều dùng & Hướng dẫn:", txtLieu));
+
+        JButton btnXacNhan = UITheme.createButton("Thêm vào đơn thuốc", UITheme.PRIMARY, Color.WHITE);
+        btnXacNhan.setPreferredSize(new Dimension(0, 38));
+        btnXacNhan.addActionListener(e -> {
+            String ten = cboThuoc.getSelectedItem().toString();
+            int sl = (int) spSL.getValue();
+            String lieu = txtLieu.getText().trim();
+
+            ChiTietDonThuoc ct = new ChiTietDonThuoc("", "", ten, sl, lieu);
+            listThuoc.add(ct);
+            modelThuoc.addRow(new Object[]{ten, sl, lieu});
+
+            dlg.dispose();
+        });
+
+        pnl.add(lblT, BorderLayout.NORTH);
+        pnl.add(pnlForm, BorderLayout.CENTER);
+        pnl.add(btnXacNhan, BorderLayout.SOUTH);
+
+        dlg.setContentPane(pnl);
+        dlg.setVisible(true);
     }
 
     private void taiDanhSachDichVu() {

@@ -8,6 +8,11 @@ import java.util.List;
 public class BenhNhanBUS {
     private BenhNhanDAO benhNhanDAO = new BenhNhanDAO();
 
+    public BenhNhan getById(String maBN) {
+        if (maBN == null || maBN.trim().isEmpty()) return null;
+        return benhNhanDAO.getById(maBN.trim());
+    }
+
     public List<BenhNhan> getAll() {
         return benhNhanDAO.getAll();
     }
