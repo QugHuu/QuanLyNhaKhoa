@@ -129,3 +129,4 @@ c:\Users\admin\QuanLyNhaKhoa\
 > 2. **BUS (Business Logic):** Chứa các quy tắc nghiệp vụ, kiểm tra tính hợp lệ dữ liệu và các ràng buộc toàn vẹn RB01–RB16.
 > 3. **DAO (Data Access):** Độc lập quản lý việc mở kết nối JDBC, thực thi câu lệnh SQL/Prepared Statement và trả về danh sách đối tượng Model (DTO).
 > Cách phân tầng này giúp mã nguồn dễ bảo trì, dễ mở rộng và kiểm thử độc lập.
+

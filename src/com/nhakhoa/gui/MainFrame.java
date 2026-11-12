@@ -14,6 +14,7 @@ public class MainFrame extends JFrame {
     private JPanel pnlContent;
     private CardLayout cardLayout;
     private List<JButton> menuButtons = new ArrayList<>();
+    private java.util.Map<String, JButton> navButtonMap = new java.util.HashMap<>();
 
     private PanelTongQuan panelTongQuan;
     private PanelBenhNhan panelBenhNhan;
@@ -143,6 +144,20 @@ public class MainFrame extends JFrame {
 
         pnlHelpCard.add(lblH1, BorderLayout.NORTH);
         pnlHelpCard.add(lblH2, BorderLayout.CENTER);
+        pnlHelpCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        pnlHelpCard.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                JOptionPane.showMessageDialog(MainFrame.this,
+                        "HƯỚNG DẪN SỬ DỤNG NHANH HỆ THỐNG NHA KHOA:\n\n"
+                        + "1. Lễ tân: Tiếp nhận bệnh nhân, Đặt lịch hẹn (chống trùng RB07), Lập hóa đơn & Thu trả góp (RB15).\n"
+                        + "2. Bác sĩ: Khám & điều trị trên Sơ đồ răng 32 chiếc, Kê đơn thuốc, Cảnh báo dị ứng (RB01).\n"
+                        + "3. Thủ kho: Quản lý lô vật tư theo nguyên tắc FEFO - Hạn gần xuất trước (RB11, RB12).\n"
+                        + "4. Quản lý: Xem biểu đồ doanh thu, hiệu suất bác sĩ, xuất báo cáo Excel UTF-8.\n\n"
+                        + "Xem chi tiết kịch bản bảo vệ trong file: HUONG_DAN_BAO_VE_DO_AN.md",
+                        "Hướng dẫn sử dụng", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
 
         JButton btnLogout = new JButton("Đăng xuất");
         btnLogout.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -174,8 +189,15 @@ public class MainFrame extends JFrame {
         JTextField txtGlobalSearch = new JTextField();
         txtGlobalSearch.setPreferredSize(new Dimension(380, 36));
         txtGlobalSearch.setFont(UITheme.FONT_REGULAR);
-        txtGlobalSearch.putClientProperty("JTextField.placeholderText", "Tìm bệnh nhân, số điện thoại, hóa đơn...");
+        txtGlobalSearch.putClientProperty("JTextField.placeholderText", "Tìm bệnh nhân, số điện thoại, mã hồ sơ... (Nhấn Enter)");
         txtGlobalSearch.putClientProperty("JComponent.roundRect", true);
+        txtGlobalSearch.addActionListener(e -> {
+            String kw = txtGlobalSearch.getText().trim();
+            if (!kw.isEmpty()) {
+                navigateTo("BENH_NHAN");
+                panelBenhNhan.timKiemTuBenNgoai(kw);
+            }
+        });
 
         // Profile user bên phải
         JPanel pnlHeaderRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 2));
@@ -264,7 +286,17 @@ public class MainFrame extends JFrame {
         });
 
         menuButtons.add(btn);
+        navButtonMap.put(cardName, btn);
         return btn;
+    }
+
+    public void navigateTo(String cardName) {
+        JButton btn = navButtonMap.get(cardName);
+        if (btn != null) {
+            btn.doClick();
+        } else {
+            JOptionPane.showMessageDialog(this, "Tài khoản [" + currentUser.getTenVaiTro() + "] không có quyền truy cập phân hệ này!", "Phân quyền (RBAC)", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void xuLyDangXuat() {

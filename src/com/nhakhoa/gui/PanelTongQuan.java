@@ -152,9 +152,9 @@ public class PanelTongQuan extends JPanel {
         JPanel pnlAttentionList = new JPanel(new GridLayout(3, 1, 0, 10));
         pnlAttentionList.setOpaque(false);
 
-        pnlAttentionList.add(taoAlertItem("03 lô vật tư cận hạn", "Khẩu trang, thuốc tê cận 30 ngày", UITheme.WARNING_BG, UITheme.WARNING_TEXT, "Xem kho"));
-        pnlAttentionList.add(taoAlertItem("Công nợ cần thu trong ngày", "Có 02 hồ sơ quá hạn trả góp", UITheme.INFO_BG, UITheme.INFO_TEXT, "Xem nợ"));
-        pnlAttentionList.add(taoAlertItem("Kho kiểm kê định mức", "Có 02 vật tư dưới mức tối thiểu", UITheme.DANGER_BG, UITheme.DANGER_TEXT, "Chi tiết"));
+        pnlAttentionList.add(taoAlertItem("03 lô vật tư cận hạn", "Khẩu trang, thuốc tê cận 30 ngày", UITheme.WARNING_BG, UITheme.WARNING_TEXT, "Xem kho", "KHO_VAT_TU"));
+        pnlAttentionList.add(taoAlertItem("Công nợ cần thu trong ngày", "Có 02 hồ sơ quá hạn trả góp", UITheme.INFO_BG, UITheme.INFO_TEXT, "Xem nợ", "HOA_DON"));
+        pnlAttentionList.add(taoAlertItem("Kho kiểm kê định mức", "Có 02 vật tư dưới mức tối thiểu", UITheme.DANGER_BG, UITheme.DANGER_TEXT, "Chi tiết", "KHO_VAT_TU"));
 
         pnlRightCard.add(lblAttTitle, BorderLayout.NORTH);
         pnlRightCard.add(pnlAttentionList, BorderLayout.CENTER);
@@ -194,7 +194,7 @@ public class PanelTongQuan extends JPanel {
         return card;
     }
 
-    private JPanel taoAlertItem(String title, String desc, Color bg, Color textCol, String actionText) {
+    private JPanel taoAlertItem(String title, String desc, Color bg, Color textCol, String actionText, String targetCard) {
         JPanel p = new JPanel(new BorderLayout(6, 2));
         p.setBackground(bg);
         p.setBorder(BorderFactory.createCompoundBorder(
@@ -214,6 +214,15 @@ public class PanelTongQuan extends JPanel {
         lblAction.setFont(UITheme.FONT_TINY);
         lblAction.setForeground(textCol);
         lblAction.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblAction.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                Window w = SwingUtilities.getWindowAncestor(PanelTongQuan.this);
+                if (w instanceof MainFrame) {
+                    ((MainFrame) w).navigateTo(targetCard);
+                }
+            }
+        });
 
         p.add(lblTitle, BorderLayout.NORTH);
         p.add(lblDesc, BorderLayout.CENTER);

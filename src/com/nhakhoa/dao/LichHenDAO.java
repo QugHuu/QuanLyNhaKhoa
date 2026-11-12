@@ -15,33 +15,32 @@ public class LichHenDAO {
     public List<LichHen> getAll() {
         List<LichHen> list = new ArrayList<>();
         String sql = "SELECT lh.MaLichHen, lh.MaBN, bn.HoTen AS TenBN, bn.SoDienThoai, "
-                   + "       lh.MaBS, bs.HoTen AS TenBS, lh.MaGhe, lh.MaKeHoach, "
-                   + "       lh.NgayHen, lh.GioBatDau, lh.GioKetThuc, lh.SoThuTuCho, lh.TinhTrang "
-                   + "FROM LICH_HEN lh "
-                   + "JOIN HO_SO_BENH_NHAN bn ON lh.MaBN = bn.MaBN "
-                   + "JOIN BAC_SI bs ON lh.MaBS = bs.MaBS "
-                   + "ORDER BY lh.NgayHen DESC, lh.GioBatDau ASC";
+                + "       lh.MaBS, bs.HoTen AS TenBS, lh.MaGhe, lh.MaKeHoach, "
+                + "       lh.NgayHen, lh.GioBatDau, lh.GioKetThuc, lh.SoThuTuCho, lh.TinhTrang "
+                + "FROM LICH_HEN lh "
+                + "JOIN HO_SO_BENH_NHAN bn ON lh.MaBN = bn.MaBN "
+                + "JOIN BAC_SI bs ON lh.MaBS = bs.MaBS "
+                + "ORDER BY lh.NgayHen DESC, lh.GioBatDau ASC";
 
         try (Connection conn = DBConnect.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
                 LichHen lh = new LichHen(
-                    rs.getString("MaLichHen"),
-                    rs.getString("MaBN"),
-                    rs.getString("TenBN"),
-                    rs.getString("SoDienThoai"),
-                    rs.getString("MaBS"),
-                    rs.getString("TenBS"),
-                    rs.getString("MaGhe"),
-                    rs.getString("MaKeHoach"),
-                    rs.getDate("NgayHen"),
-                    rs.getString("GioBatDau"),
-                    rs.getString("GioKetThuc"),
-                    rs.getInt("SoThuTuCho"),
-                    rs.getString("TinhTrang")
-                );
+                        rs.getString("MaLichHen"),
+                        rs.getString("MaBN"),
+                        rs.getString("TenBN"),
+                        rs.getString("SoDienThoai"),
+                        rs.getString("MaBS"),
+                        rs.getString("TenBS"),
+                        rs.getString("MaGhe"),
+                        rs.getString("MaKeHoach"),
+                        rs.getDate("NgayHen"),
+                        rs.getString("GioBatDau"),
+                        rs.getString("GioKetThuc"),
+                        rs.getInt("SoThuTuCho"),
+                        rs.getString("TinhTrang"));
                 list.add(lh);
             }
         } catch (Exception e) {
@@ -53,34 +52,33 @@ public class LichHenDAO {
     public List<LichHen> getLichHenDaDen() {
         List<LichHen> list = new ArrayList<>();
         String sql = "SELECT lh.MaLichHen, lh.MaBN, bn.HoTen AS TenBN, bn.SoDienThoai, "
-                   + "       lh.MaBS, bs.HoTen AS TenBS, lh.MaGhe, lh.MaKeHoach, "
-                   + "       lh.NgayHen, lh.GioBatDau, lh.GioKetThuc, lh.SoThuTuCho, lh.TinhTrang "
-                   + "FROM LICH_HEN lh "
-                   + "JOIN HO_SO_BENH_NHAN bn ON lh.MaBN = bn.MaBN "
-                   + "JOIN BAC_SI bs ON lh.MaBS = bs.MaBS "
-                   + "WHERE lh.TinhTrang IN ('DA_DEN', 'CHO_KHAM', 'DANG_KHAM') "
-                   + "ORDER BY CASE WHEN lh.TinhTrang = 'DA_DEN' THEN 1 ELSE 2 END, lh.SoThuTuCho ASC";
+                + "       lh.MaBS, bs.HoTen AS TenBS, lh.MaGhe, lh.MaKeHoach, "
+                + "       lh.NgayHen, lh.GioBatDau, lh.GioKetThuc, lh.SoThuTuCho, lh.TinhTrang "
+                + "FROM LICH_HEN lh "
+                + "JOIN HO_SO_BENH_NHAN bn ON lh.MaBN = bn.MaBN "
+                + "JOIN BAC_SI bs ON lh.MaBS = bs.MaBS "
+                + "WHERE lh.TinhTrang IN ('DA_DEN', 'CHO_KHAM', 'DANG_KHAM') "
+                + "ORDER BY CASE WHEN lh.TinhTrang = 'DA_DEN' THEN 1 ELSE 2 END, lh.SoThuTuCho ASC";
 
         try (Connection conn = DBConnect.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
                 LichHen lh = new LichHen(
-                    rs.getString("MaLichHen"),
-                    rs.getString("MaBN"),
-                    rs.getString("TenBN"),
-                    rs.getString("SoDienThoai"),
-                    rs.getString("MaBS"),
-                    rs.getString("TenBS"),
-                    rs.getString("MaGhe"),
-                    rs.getString("MaKeHoach"),
-                    rs.getDate("NgayHen"),
-                    rs.getString("GioBatDau"),
-                    rs.getString("GioKetThuc"),
-                    rs.getInt("SoThuTuCho"),
-                    rs.getString("TinhTrang")
-                );
+                        rs.getString("MaLichHen"),
+                        rs.getString("MaBN"),
+                        rs.getString("TenBN"),
+                        rs.getString("SoDienThoai"),
+                        rs.getString("MaBS"),
+                        rs.getString("TenBS"),
+                        rs.getString("MaGhe"),
+                        rs.getString("MaKeHoach"),
+                        rs.getDate("NgayHen"),
+                        rs.getString("GioBatDau"),
+                        rs.getString("GioKetThuc"),
+                        rs.getInt("SoThuTuCho"),
+                        rs.getString("TinhTrang"));
                 list.add(lh);
             }
         } catch (Exception e) {
@@ -92,8 +90,8 @@ public class LichHenDAO {
     public String taoMaLHMoi() {
         String sql = "SELECT TOP 1 MaLichHen FROM LICH_HEN ORDER BY MaLichHen DESC";
         try (Connection conn = DBConnect.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             if (rs.next()) {
                 String lastId = rs.getString(1); // LH003
                 int num = Integer.parseInt(lastId.substring(2)) + 1;
@@ -110,12 +108,12 @@ public class LichHenDAO {
      */
     public boolean kiemTraTrungLich(String maBS, String maGhe, java.sql.Date ngayHen, String gioBD, String gioKT) {
         String sql = "SELECT COUNT(*) FROM LICH_HEN "
-                   + "WHERE NgayHen = ? AND TinhTrang <> 'DA_HUY' "
-                   + "  AND (MaBS = ? OR MaGhe = ?) "
-                   + "  AND NOT (GioKetThuc <= ? OR GioBatDau >= ?)";
+                + "WHERE NgayHen = ? AND TinhTrang <> 'DA_HUY' "
+                + "  AND (MaBS = ? OR MaGhe = ?) "
+                + "  AND NOT (GioKetThuc <= ? OR GioBatDau >= ?)";
 
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setDate(1, ngayHen);
             ps.setString(2, maBS);
@@ -136,10 +134,10 @@ public class LichHenDAO {
 
     public boolean them(LichHen lh) {
         String sql = "INSERT INTO LICH_HEN (MaLichHen, MaBN, MaBS, MaGhe, NgayHen, GioBatDau, GioKetThuc, SoThuTuCho, TinhTrang) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, lh.getMaLichHen());
             ps.setString(2, lh.getMaBN());
@@ -161,7 +159,7 @@ public class LichHenDAO {
     public boolean doiTrangThai(String maLichHen, String tinhTrang) {
         String sql = "UPDATE LICH_HEN SET TinhTrang = ? WHERE MaLichHen = ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, tinhTrang);
             ps.setString(2, maLichHen);
             return ps.executeUpdate() > 0;
@@ -175,10 +173,10 @@ public class LichHenDAO {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT MaBS, HoTen FROM BAC_SI WHERE TinhTrang = 'DANG_LAM'";
         try (Connection conn = DBConnect.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                list.add(new String[]{ rs.getString("MaBS"), rs.getString("HoTen") });
+                list.add(new String[] { rs.getString("MaBS"), rs.getString("HoTen") });
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -190,10 +188,11 @@ public class LichHenDAO {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT g.MaGhe, g.SoGhe, p.TenPhong FROM GHE_DIEU_TRI g JOIN PHONG_KHAM p ON g.MaPhong = p.MaPhong WHERE g.TinhTrang = 'HOAT_DONG'";
         try (Connection conn = DBConnect.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                list.add(new String[]{ rs.getString("MaGhe"), rs.getString("SoGhe") + " (" + rs.getString("TenPhong") + ")" });
+                list.add(new String[] { rs.getString("MaGhe"),
+                        rs.getString("SoGhe") + " (" + rs.getString("TenPhong") + ")" });
             }
         } catch (Exception e) {
             e.printStackTrace();

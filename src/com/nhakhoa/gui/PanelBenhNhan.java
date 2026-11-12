@@ -194,6 +194,11 @@ public class PanelBenhNhan extends JPanel {
         taiDuLieu();
     }
 
+    public void timKiemTuBenNgoai(String keyword) {
+        txtSearch.setText(keyword);
+        xuLyTimKiem();
+    }
+
     public void taiDuLieu() {
         modelListPatients.setRowCount(0);
         List<BenhNhan> list = benhNhanBUS.getAll();

@@ -74,11 +74,33 @@ public class PanelLichHen extends JPanel {
         pnlDateSwitch.setOpaque(false);
         JButton btnPrev = new JButton("<");
         JButton btnNext = new JButton(">");
-        JLabel lblCurDate = new JLabel("Thứ Ba, " + new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        JButton btnToday = new JButton("Hôm nay");
+        btnToday.setFont(UITheme.FONT_SMALL);
+        final java.util.Calendar calDate = java.util.Calendar.getInstance();
+        SimpleDateFormat sdfThu = new SimpleDateFormat("EEEE, dd/MM/yyyy", new java.util.Locale("vi", "VN"));
+        JLabel lblCurDate = new JLabel(sdfThu.format(calDate.getTime()));
         lblCurDate.setFont(UITheme.FONT_BOLD);
+
+        btnPrev.addActionListener(e -> {
+            calDate.add(java.util.Calendar.DAY_OF_MONTH, -1);
+            lblCurDate.setText(sdfThu.format(calDate.getTime()));
+            taiDuLieu();
+        });
+        btnNext.addActionListener(e -> {
+            calDate.add(java.util.Calendar.DAY_OF_MONTH, 1);
+            lblCurDate.setText(sdfThu.format(calDate.getTime()));
+            taiDuLieu();
+        });
+        btnToday.addActionListener(e -> {
+            calDate.setTime(new Date());
+            lblCurDate.setText(sdfThu.format(calDate.getTime()));
+            taiDuLieu();
+        });
+
         pnlDateSwitch.add(btnPrev);
-        pnlDateSwitch.add(lblCurDate);
+        pnlDateSwitch.add(btnToday);
         pnlDateSwitch.add(btnNext);
+        pnlDateSwitch.add(lblCurDate);
 
         JPanel pnlViewType = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         pnlViewType.setOpaque(false);

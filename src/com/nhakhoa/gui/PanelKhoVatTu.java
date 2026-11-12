@@ -89,6 +89,34 @@ public class PanelKhoVatTu extends JPanel {
         JLabel lblAlertLink = new JLabel("Xem chi tiết cảnh báo →", SwingConstants.RIGHT);
         lblAlertLink.setFont(UITheme.FONT_SMALL);
         lblAlertLink.setForeground(UITheme.WARNING_TEXT);
+        lblAlertLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblAlertLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                List<LoVatTu> sapHet = khoDAO.getLoSapHetHan();
+                List<VatTu> tonThap = khoDAO.getVatTuTonThap();
+                StringBuilder sb = new StringBuilder();
+                sb.append("1. CÁC LÔ CẬN HẠN SỬ DỤNG (≤ 30 NGÀY - RB11):\n");
+                if (sapHet.isEmpty()) {
+                    sb.append("   - Không có lô nào cận hạn trong 30 ngày.\n");
+                } else {
+                    for (LoVatTu lo : sapHet) {
+                        sb.append(String.format("   - [%s] %s (Số lô: %s) - HSD: %s - Tồn: %d %s\n",
+                                lo.getMaLo(), lo.getTenVatTu(), lo.getSoLo(), sdf.format(lo.getHanSuDung()), lo.getSoLuongTon(), lo.getDonViTinh()));
+                    }
+                }
+                sb.append("\n2. VẬT TƯ DƯỚI ĐỊNH MỨC TỒN KHO TỐI THIỂU:\n");
+                if (tonThap.isEmpty()) {
+                    sb.append("   - Tất cả vật tư đều đạt định mức an toàn.\n");
+                } else {
+                    for (VatTu vt : tonThap) {
+                        sb.append(String.format("   - [%s] %s - Tồn: %d (Tối thiểu: %d %s)\n",
+                                vt.getMaVatTu(), vt.getTenVatTu(), vt.getTongTon(), vt.getMucTonToiThieu(), vt.getDonViTinh()));
+                    }
+                }
+                JOptionPane.showMessageDialog(PanelKhoVatTu.this, sb.toString(), "Chi tiết cảnh báo Kho (FEFO)", JOptionPane.WARNING_MESSAGE);
+            }
+        });
 
         pnlAlertBanner.add(lblAlertText, BorderLayout.CENTER);
         pnlAlertBanner.add(lblAlertLink, BorderLayout.EAST);

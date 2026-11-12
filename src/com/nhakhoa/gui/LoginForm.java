@@ -100,6 +100,14 @@ public class LoginForm extends JFrame {
         lblForgot.setFont(UITheme.FONT_SMALL);
         lblForgot.setForeground(UITheme.PRIMARY);
         lblForgot.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblForgot.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                JOptionPane.showMessageDialog(LoginForm.this,
+                        "Vui lòng liên hệ Quản trị viên (Admin) hoặc Bộ phận IT phòng khám để cấp lại mật khẩu!\n\nTài khoản demo nhanh:\n- Quản lý: admin / admin123\n- Lễ tân: letan01 / 123456\n- Bác sĩ: bacsi01 / 123456\n- Thủ kho: kho01 / 123456",
+                        "Hỗ trợ quên mật khẩu", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
 
         pnlExtra.add(chkRemember, BorderLayout.WEST);
         pnlExtra.add(lblForgot, BorderLayout.EAST);
