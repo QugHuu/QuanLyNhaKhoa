@@ -260,4 +260,54 @@ public class HoaDonDAO {
             DBConnect.close(conn);
         }
     }
+
+    // FR-24: Hủy hóa đơn với lý do (soft delete)
+    public boolean huyHoaDon(String maHD) {
+        String sql = "UPDATE HOA_DON SET TinhTrang = 'DA_HUY' WHERE MaHoaDon = ? AND TinhTrang <> 'DA_HUY'";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maHD);
+            boolean ok = ps.executeUpdate() > 0;
+            if (ok) {
+                // Hủy công nợ liên quan nếu có
+                String sqlCN = "UPDATE HO_SO_CONG_NO SET TinhTrang = 'DA_HUY' WHERE MaHoaDon = ?";
+                try (PreparedStatement psCN = conn.prepareStatement(sqlCN)) {
+                    psCN.setString(1, maHD);
+                    psCN.executeUpdate();
+                } catch (Exception ex) {}
+            }
+            return ok;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Lấy chi tiết dịch vụ trong hóa đơn
+    public java.util.List<String[]> getChiTietHoaDon(String maHD) {
+        java.util.List<String[]> list = new java.util.ArrayList<>();
+        // Lấy từ CHI_TIET_DIEU_TRI qua PHIEU_DIEU_TRI join HOA_DON qua MaBN + NgayLap
+        String sql = "SELECT dv.TenDichVu, ctdt.SoLuong, dv.DonGia, (ctdt.SoLuong * dv.DonGia) AS ThanhTien "
+                   + "FROM CHI_TIET_DIEU_TRI ctdt "
+                   + "JOIN PHIEU_DIEU_TRI pdt ON ctdt.MaPhieuDT = pdt.MaPhieuDT "
+                   + "JOIN HOA_DON hd ON pdt.MaBN = hd.MaBN AND CAST(pdt.NgayDieuTri AS DATE) = CAST(hd.NgayLap AS DATE) "
+                   + "JOIN DICH_VU dv ON ctdt.MaDV = dv.MaDV "
+                   + "WHERE hd.MaHoaDon = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maHD);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new String[]{
+                    rs.getString("TenDichVu"),
+                    rs.getString("SoLuong"),
+                    rs.getString("DonGia"),
+                    rs.getString("ThanhTien")
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

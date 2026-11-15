@@ -282,9 +282,21 @@ public class PanelBenhNhan extends JPanel {
         JButton btnLuu = UITheme.createButton(isEdit ? "Lưu thay đổi" : "Lưu bệnh nhân", UITheme.PRIMARY, Color.WHITE);
         btnLuu.setPreferredSize(new Dimension(0, 40));
         btnLuu.addActionListener(e -> {
+            String ten = txtTen.getText().trim();
+            String sdt = txtSDT.getText().trim();
+            if (ten.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, "Vui lòng nhập họ và tên bệnh nhân!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                txtTen.requestFocus();
+                return;
+            }
+            if (!validateSDT(sdt)) {
+                JOptionPane.showMessageDialog(dlg, "Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.", "Lỗi định dạng", JOptionPane.WARNING_MESSAGE);
+                txtSDT.requestFocus();
+                return;
+            }
             try {
                 Date ns = sdf.parse(txtNS.getText().trim());
-                BenhNhan bn = new BenhNhan(txtMa.getText().trim(), txtTen.getText().trim(), ns, txtC.getText().trim(), txtSDT.getText().trim(), txtTS.getText().trim(), "HOAT_DONG", new Date());
+                BenhNhan bn = new BenhNhan(txtMa.getText().trim(), ten, ns, txtC.getText().trim(), sdt, txtTS.getText().trim(), "HOAT_DONG", new Date());
                 if (isEdit) {
                     benhNhanBUS.sua(bn);
                 } else {
@@ -304,6 +316,10 @@ public class PanelBenhNhan extends JPanel {
 
         dlg.setContentPane(pnl);
         dlg.setVisible(true);
+    }
+
+    private boolean validateSDT(String sdt) {
+        return sdt != null && sdt.matches("\\d{10,11}");
     }
 
     private JPanel taoField(String label, JComponent comp) {

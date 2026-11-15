@@ -7,6 +7,7 @@ C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\DichVuDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\HoaDonDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\KhoDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\LichHenDAO.java
+C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\NhanSuDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\PhieuKhamDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\TaiKhoanDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\ThongKeDAO.java
@@ -18,6 +19,7 @@ C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelHoaDon.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelKhamBenh.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelKhoVatTu.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelLichHen.java
+C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelNhanSu.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelThongKe.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\gui\PanelTongQuan.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\BenhNhan.java

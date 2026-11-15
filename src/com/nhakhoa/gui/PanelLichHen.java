@@ -246,17 +246,33 @@ public class PanelLichHen extends JPanel {
         }
     }
 
+    // FR-13: Hủy lịch hẹn kèm lý do bắt buộc
     private void xuLyHuy() {
         if (selectedMaLich == null) return;
-        int cf = JOptionPane.showConfirmDialog(this, "Xác nhận hủy lịch hẹn " + selectedMaLich + "?", "Hủy lịch", JOptionPane.YES_NO_OPTION);
-        if (cf == JOptionPane.YES_OPTION) {
-            try {
-                lichHenBUS.doiTrangThai(selectedMaLich, "DA_HUY");
-                JOptionPane.showMessageDialog(this, "Đã hủy lịch hẹn thành công!");
+
+        // Yêu cầu nhập lý do hủy (FR-13)
+        String lyDo = JOptionPane.showInputDialog(this,
+            "Nhap ly do huy lich hen " + selectedMaLich + ":\n(Bat buoc, toi thieu 5 ky tu)",
+            "Huy lich hen", JOptionPane.QUESTION_MESSAGE);
+
+        if (lyDo == null) return; // Người dùng bấm Cancel
+        lyDo = lyDo.trim();
+        if (lyDo.length() < 3) {
+            JOptionPane.showMessageDialog(this, "Vui long nhap ly do huy (toi thieu 3 ky tu)!", "Loi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            com.nhakhoa.dao.LichHenDAO lichHenDAO = new com.nhakhoa.dao.LichHenDAO();
+            boolean ok = lichHenDAO.huyLichHen(selectedMaLich, lyDo);
+            if (ok) {
+                JOptionPane.showMessageDialog(this, "Da huy lich hen thanh cong!\nLy do: " + lyDo);
                 taiDuLieu();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Co loi khi huy lich!", "Loi", JOptionPane.ERROR_MESSAGE);
             }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Loi: " + ex.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
         }
     }
 

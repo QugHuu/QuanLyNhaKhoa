@@ -18,6 +18,6 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo [2/2] Bien dich thanh cong! Dang khoi chay chuong trinh...
-start "" javaw -cp "bin;lib\mssql-jdbc.jar;lib\flatlaf.jar;lib\*" "-Djava.library.path=lib" com.nhakhoa.App
+start "" javaw -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Dswing.aatext=true -Dawt.useSystemAAFontSettings=on -cp "bin;lib\mssql-jdbc.jar;lib\flatlaf.jar;lib\*" "-Djava.library.path=lib" com.nhakhoa.App
 echo Da mo ung dung thanh cong!
 exit /b 0

@@ -177,4 +177,56 @@ public class ThongKeDAO {
         }
         return list;
     }
+
+    // FR-67: Lô vật tư sắp hết hạn
+    public List<String[]> getLoSapHetHan(int soNgay) {
+        List<String[]> list = new ArrayList<>();
+        String sql = "SELECT lo.MaLo, vt.TenVatTu, lo.SoLo, lo.SoLuongTon, vt.DonViTinh, "
+                   + "       lo.HanSuDung, DATEDIFF(day, GETDATE(), lo.HanSuDung) AS SoNgayConLai "
+                   + "FROM LO_VAT_TU lo JOIN VAT_TU vt ON lo.MaVatTu = vt.MaVatTu "
+                   + "WHERE lo.TinhTrangLo = 'KHA_DUNG' AND lo.SoLuongTon > 0 "
+                   + "  AND lo.HanSuDung BETWEEN CAST(GETDATE() AS DATE) AND DATEADD(day, " + soNgay + ", CAST(GETDATE() AS DATE)) "
+                   + "ORDER BY lo.HanSuDung ASC";
+        try (Connection conn = DBConnect.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(new String[]{
+                    rs.getString("MaLo"),
+                    rs.getString("TenVatTu"),
+                    rs.getString("SoLo"),
+                    rs.getString("SoLuongTon") + " " + rs.getString("DonViTinh"),
+                    rs.getString("HanSuDung"),
+                    rs.getString("SoNgayConLai") + " ngay"
+                });
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // FR-66: Báo cáo Nhập-Xuất-Tồn
+    public List<String[]> getBaoCaoNhapXuatTon() {
+        List<String[]> list = new ArrayList<>();
+        String sql = "SELECT vt.MaVatTu, vt.TenVatTu, vt.DonViTinh, "
+                   + "       COALESCE(SUM(CASE WHEN lo.TinhTrangLo IN ('KHA_DUNG','HET_HANG') THEN lo.SoLuongNhap ELSE 0 END), 0) AS TongNhap, "
+                   + "       COALESCE(SUM(CASE WHEN lo.TinhTrangLo = 'HET_HANG' THEN lo.SoLuongNhap ELSE 0 END), 0) AS TongXuat, "
+                   + "       COALESCE(SUM(CASE WHEN lo.TinhTrangLo = 'KHA_DUNG' THEN lo.SoLuongTon ELSE 0 END), 0) AS TonCuoi "
+                   + "FROM VAT_TU vt LEFT JOIN LO_VAT_TU lo ON vt.MaVatTu = lo.MaVatTu "
+                   + "GROUP BY vt.MaVatTu, vt.TenVatTu, vt.DonViTinh ORDER BY vt.MaVatTu";
+        try (Connection conn = DBConnect.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(new String[]{
+                    rs.getString("MaVatTu"),
+                    rs.getString("TenVatTu"),
+                    rs.getString("DonViTinh"),
+                    rs.getString("TongNhap"),
+                    rs.getString("TongXuat"),
+                    rs.getString("TonCuoi")
+                });
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
 }

@@ -169,6 +169,28 @@ public class LichHenDAO {
         }
     }
 
+    // FR-13: Hủy lịch hẹn kèm lý do
+    public boolean huyLichHen(String maLichHen, String lyDoHuy) {
+        String sql = "UPDATE LICH_HEN SET TinhTrang = 'DA_HUY', LyDoHuy = ? WHERE MaLichHen = ?";
+        try (Connection conn = DBConnect.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, lyDoHuy);
+            ps.setString(2, maLichHen);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            // Nếu cột LyDoHuy chưa có, thử không có lý do
+            String sqlFallback = "UPDATE LICH_HEN SET TinhTrang = 'DA_HUY' WHERE MaLichHen = ?";
+            try (Connection conn2 = DBConnect.getConnection();
+                 PreparedStatement ps2 = conn2.prepareStatement(sqlFallback)) {
+                ps2.setString(1, maLichHen);
+                return ps2.executeUpdate() > 0;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return false;
+            }
+        }
+    }
+
     public List<String[]> getDanhSachBacSi() {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT MaBS, HoTen FROM BAC_SI WHERE TinhTrang = 'DANG_LAM'";

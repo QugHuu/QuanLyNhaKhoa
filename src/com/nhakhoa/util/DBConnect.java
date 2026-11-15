@@ -14,22 +14,24 @@ public class DBConnect {
     private static final String DB_NAME = "QuanLyNhaKhoa";
     
     public static Connection getConnection() {
+        // Đảm bảo JDBC driver dùng Unicode cho string parameters
+        System.setProperty("file.encoding", "UTF-8");
         Connection conn = null;
         try {
             // Cách 1: Thử kết nối qua Windows Authentication (Integrated Security)
-            String urlWindowsAuth = "jdbc:sqlserver://localhost\\SQLEXPRESS02;databaseName=" + DB_NAME + ";integratedSecurity=true;trustServerCertificate=true;";
+            String urlWindowsAuth = "jdbc:sqlserver://localhost\\SQLEXPRESS02;databaseName=" + DB_NAME + ";integratedSecurity=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;";
             conn = DriverManager.getConnection(urlWindowsAuth);
             return conn;
         } catch (Exception e1) {
             try {
                 // Cách 2: Thử kết nối qua port động 49672 hoặc tài khoản nhakhoa/123
-                String urlSQLAuth = "jdbc:sqlserver://localhost\\SQLEXPRESS02;databaseName=" + DB_NAME + ";user=nhakhoa;password=123;trustServerCertificate=true;";
+                String urlSQLAuth = "jdbc:sqlserver://localhost\\SQLEXPRESS02;databaseName=" + DB_NAME + ";user=nhakhoa;password=123;trustServerCertificate=true;sendStringParametersAsUnicode=true;";
                 conn = DriverManager.getConnection(urlSQLAuth);
                 return conn;
             } catch (Exception e2) {
                 try {
                     // Cách 3: Thử kết nối SQLEXPRESS mặc định
-                    String urlDefault = "jdbc:sqlserver://localhost\\SQLEXPRESS;databaseName=" + DB_NAME + ";integratedSecurity=true;trustServerCertificate=true;";
+                    String urlDefault = "jdbc:sqlserver://localhost\\SQLEXPRESS;databaseName=" + DB_NAME + ";integratedSecurity=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;";
                     conn = DriverManager.getConnection(urlDefault);
                     return conn;
                 } catch (Exception e3) {

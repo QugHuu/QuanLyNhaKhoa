@@ -24,6 +24,7 @@ public class MainFrame extends JFrame {
     private PanelKhoVatTu panelKhoVatTu;
     private PanelDichVu panelDichVu;
     private PanelThongKe panelThongKe;
+    private PanelNhanSu panelNhanSu;
 
     public MainFrame(TaiKhoan user) {
         this.currentUser = user;
@@ -79,8 +80,8 @@ public class MainFrame extends JFrame {
         pnlSidebarTop.add(pnlLogoBox, BorderLayout.NORTH);
         pnlSidebarTop.add(pnlBranch, BorderLayout.CENTER);
 
-        // 2. Navigation Items
-        JPanel pnlNav = new JPanel(new GridLayout(8, 1, 0, 4));
+        // Navigation grid: thêm 1 ô cho NHAN_SU
+        JPanel pnlNav = new JPanel(new GridLayout(9, 1, 0, 4));
         pnlNav.setOpaque(false);
         pnlNav.setBorder(new EmptyBorder(8, 10, 0, 10));
 
@@ -97,6 +98,7 @@ public class MainFrame extends JFrame {
         panelKhoVatTu = new PanelKhoVatTu();
         panelDichVu = new PanelDichVu();
         panelThongKe = new PanelThongKe();
+        panelNhanSu = new PanelNhanSu();
 
         pnlContent.add(panelTongQuan, "TONG_QUAN");
         pnlContent.add(panelLichHen, "LICH_HEN");
@@ -106,6 +108,7 @@ public class MainFrame extends JFrame {
         pnlContent.add(panelKhoVatTu, "KHO_VAT_TU");
         pnlContent.add(panelDichVu, "DICH_VU");
         pnlContent.add(panelThongKe, "THONG_KE");
+        pnlContent.add(panelNhanSu, "NHAN_SU");
 
         // RBAC Permissions
         boolean isQL = currentUser.isQuanLy();
@@ -121,6 +124,7 @@ public class MainFrame extends JFrame {
         if (isQL || isKho) pnlNav.add(taoNutNav("Kho vật tư", "KHO_VAT_TU"));
         if (isQL) pnlNav.add(taoNutNav("Bảng giá dịch vụ", "DICH_VU"));
         if (isQL) pnlNav.add(taoNutNav("Báo cáo & thống kê", "THONG_KE"));
+        if (isQL) pnlNav.add(taoNutNav("Nhân sự & tài khoản", "NHAN_SU"));
 
         // 3. Sidebar Bottom: Help Card & Logout
         JPanel pnlSidebarBottom = new JPanel(new BorderLayout(0, 10));
@@ -169,8 +173,24 @@ public class MainFrame extends JFrame {
         btnLogout.setPreferredSize(new Dimension(0, 32));
         btnLogout.addActionListener(e -> xuLyDangXuat());
 
+        // FR-03: Nút đổi mật khẩu
+        JButton btnDoiMK = new JButton("Doi mat khau");
+        btnDoiMK.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        btnDoiMK.setForeground(UITheme.TEXT_MUTED);
+        btnDoiMK.setBackground(Color.WHITE);
+        btnDoiMK.setFocusPainted(false);
+        btnDoiMK.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnDoiMK.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+        btnDoiMK.setPreferredSize(new Dimension(0, 28));
+        btnDoiMK.addActionListener(e -> xuLyDoiMatKhau());
+
+        JPanel pnlBtns = new JPanel(new GridLayout(2, 1, 0, 6));
+        pnlBtns.setOpaque(false);
+        pnlBtns.add(btnDoiMK);
+        pnlBtns.add(btnLogout);
+
         pnlSidebarBottom.add(pnlHelpCard, BorderLayout.NORTH);
-        pnlSidebarBottom.add(btnLogout, BorderLayout.SOUTH);
+        pnlSidebarBottom.add(pnlBtns, BorderLayout.SOUTH);
 
         pnlSidebar.add(pnlSidebarTop, BorderLayout.NORTH);
         pnlSidebar.add(pnlNav, BorderLayout.CENTER);
@@ -283,6 +303,7 @@ public class MainFrame extends JFrame {
             else if ("KHO_VAT_TU".equals(cardName)) panelKhoVatTu.taiDuLieu();
             else if ("DICH_VU".equals(cardName)) panelDichVu.taiDuLieu();
             else if ("THONG_KE".equals(cardName)) panelThongKe.taiDuLieu();
+            else if ("NHAN_SU".equals(cardName)) panelNhanSu.taiDuLieu();
         });
 
         menuButtons.add(btn);
@@ -304,6 +325,42 @@ public class MainFrame extends JFrame {
         if (confirm == JOptionPane.YES_OPTION) {
             this.dispose();
             SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
+        }
+    }
+
+    // FR-03: Đổi mật khẩu
+    private void xuLyDoiMatKhau() {
+        JPasswordField txtCu = new JPasswordField(15);
+        JPasswordField txtMoi = new JPasswordField(15);
+        JPasswordField txtXacNhan = new JPasswordField(15);
+
+        JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+        form.add(new JLabel("Mat khau hien tai:")); form.add(txtCu);
+        form.add(new JLabel("Mat khau moi:")); form.add(txtMoi);
+        form.add(new JLabel("Xac nhan mat khau moi:")); form.add(txtXacNhan);
+
+        int result = JOptionPane.showConfirmDialog(this, form, "Doi mat khau", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) return;
+
+        String matKhauCu = new String(txtCu.getPassword());
+        String matKhauMoi = new String(txtMoi.getPassword());
+        String xacNhan = new String(txtXacNhan.getPassword());
+
+        if (matKhauMoi.length() < 4) {
+            JOptionPane.showMessageDialog(this, "Mat khau moi phai co it nhat 4 ky tu!", "Loi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (!matKhauMoi.equals(xacNhan)) {
+            JOptionPane.showMessageDialog(this, "Mat khau xac nhan khong khop!", "Loi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        com.nhakhoa.dao.TaiKhoanDAO dao = new com.nhakhoa.dao.TaiKhoanDAO();
+        boolean ok = dao.doiMatKhau(currentUser.getMaTaiKhoan(), matKhauCu, matKhauMoi);
+        if (ok) {
+            JOptionPane.showMessageDialog(this, "Doi mat khau thanh cong!", "Thanh cong", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Mat khau hien tai khong dung hoac co loi xay ra!", "Loi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

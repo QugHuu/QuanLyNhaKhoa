@@ -7,6 +7,8 @@ import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -17,6 +19,7 @@ public class PanelKhoVatTu extends JPanel {
     private JTable tblLoVatTu;
     private DefaultTableModel modelLo;
     private JLabel lblTotalItems, lblExpiringSoon, lblLowStock, lblExpired;
+    private JTextField txtSearch;
 
     private KhoDAO khoDAO = new KhoDAO();
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -54,7 +57,11 @@ public class PanelKhoVatTu extends JPanel {
         JButton btnNhapKho = UITheme.createButton("+ Nhập lô mới", UITheme.PRIMARY, Color.WHITE);
         btnNhapKho.addActionListener(e -> hienDialogNhapKho());
 
+        JButton btnKiemKe = UITheme.createButton("Kiem ke kho", UITheme.BG_CARD, UITheme.INFO);
+        btnKiemKe.addActionListener(e -> xuLyKiemKe());
+
         pnlHeaderActions.add(btnXuatKho);
+        pnlHeaderActions.add(btnKiemKe);
         pnlHeaderActions.add(btnNhapKho);
 
         pnlHeader.add(pnlTitle, BorderLayout.WEST);
@@ -131,19 +138,34 @@ public class PanelKhoVatTu extends JPanel {
         JPanel pnlTableCard = UITheme.createCard();
         pnlTableCard.setLayout(new BorderLayout(0, 10));
 
-        JPanel pnlFilterLine = new JPanel(new BorderLayout());
+        JPanel pnlFilterLine = new JPanel(new BorderLayout(8, 0));
         pnlFilterLine.setOpaque(false);
 
         JLabel lblTableTitle = new JLabel("Danh mục lô vật tư theo thứ tự FEFO (Hạn dùng gần nhất xếp đầu)");
         lblTableTitle.setFont(UITheme.FONT_SUBTITLE);
         lblTableTitle.setForeground(UITheme.TEXT_DARK);
 
+        txtSearch = new JTextField();
+        txtSearch.putClientProperty("JTextField.placeholderText", "Tìm tên vật tư, số lô...");
+        txtSearch.putClientProperty("JComponent.roundRect", true);
+        txtSearch.setPreferredSize(new Dimension(200, 32));
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { locDanhSach(); }
+            @Override public void removeUpdate(DocumentEvent e) { locDanhSach(); }
+            @Override public void changedUpdate(DocumentEvent e) { locDanhSach(); }
+        });
+
         JButton btnReload = UITheme.createButton("Làm mới", Color.WHITE, UITheme.TEXT_DARK);
         btnReload.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
         btnReload.addActionListener(e -> taiDuLieu());
 
+        JPanel pnlRightFilter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        pnlRightFilter.setOpaque(false);
+        pnlRightFilter.add(txtSearch);
+        pnlRightFilter.add(btnReload);
+
         pnlFilterLine.add(lblTableTitle, BorderLayout.WEST);
-        pnlFilterLine.add(btnReload, BorderLayout.EAST);
+        pnlFilterLine.add(pnlRightFilter, BorderLayout.EAST);
 
         String[] headers = {"Mã Lô", "Tên Vật Tư", "Số Lô", "Số Lượng Tồn", "Đơn Vị", "Hạn Sử Dụng (FEFO)", "Trạng Thái Lô"};
         modelLo = new DefaultTableModel(headers, 0) {
@@ -225,6 +247,26 @@ public class PanelKhoVatTu extends JPanel {
         c.add(lblVal, BorderLayout.CENTER);
         c.add(ls, BorderLayout.SOUTH);
         return c;
+    }
+
+    private void locDanhSach() {
+        String keyword = txtSearch != null ? txtSearch.getText().trim().toLowerCase() : "";
+        modelLo.setRowCount(0);
+        for (LoVatTu lo : cachedListLo) {
+            String ten = lo.getTenVatTu() != null ? lo.getTenVatTu().toLowerCase() : "";
+            String soLo = lo.getSoLo() != null ? lo.getSoLo().toLowerCase() : "";
+            if (keyword.isEmpty() || ten.contains(keyword) || soLo.contains(keyword)) {
+                modelLo.addRow(new Object[]{
+                        lo.getMaLo(),
+                        lo.getTenVatTu(),
+                        lo.getSoLo(),
+                        lo.getSoLuongTon(),
+                        lo.getDonViTinh(),
+                        sdf.format(lo.getHanSuDung()),
+                        lo.getTinhTrangLo()
+                });
+            }
+        }
     }
 
     public void taiDuLieu() {
@@ -345,5 +387,29 @@ public class PanelKhoVatTu extends JPanel {
         p.add(l, BorderLayout.NORTH);
         p.add(comp, BorderLayout.CENTER);
         return p;
+    }
+
+    private void xuLyKiemKe() {
+        // Chọn vật tư
+        List<VatTu> dsVT = khoDAO.getAllVatTu();
+        if (dsVT.isEmpty()) { JOptionPane.showMessageDialog(this, "Khong co vat tu nao!"); return; }
+        String[] tenVT = dsVT.stream().map(v -> v.getMaVatTu() + " - " + v.getTenVatTu() + " (Ton: " + v.getTongTon() + " " + v.getDonViTinh() + ")").toArray(String[]::new);
+        String chon = (String) JOptionPane.showInputDialog(this, "Chon vat tu can kiem ke:", "Kiem ke ton kho",
+            JOptionPane.QUESTION_MESSAGE, null, tenVT, tenVT[0]);
+        if (chon == null) return;
+        String maVT = chon.split(" - ")[0];
+
+        String soLuongStr = JOptionPane.showInputDialog(this, "Nhap so luong thuc te dem duoc:", "Kiem ke ton kho", JOptionPane.QUESTION_MESSAGE);
+        if (soLuongStr == null) return;
+        try {
+            int soLuong = Integer.parseInt(soLuongStr.trim());
+            String lyDo = JOptionPane.showInputDialog(this, "Nhap ly do dieu chinh (neu co):", "Kiem ke");
+            if (lyDo == null) lyDo = "Kiem ke dinh ky";
+            khoDAO.dieuChinhTonKho(maVT, soLuong, lyDo);
+            JOptionPane.showMessageDialog(this, "Da cap nhat ton kho thanh cong!");
+            taiDuLieu();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "So luong khong hop le!", "Loi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

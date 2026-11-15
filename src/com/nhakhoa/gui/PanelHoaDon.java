@@ -234,8 +234,17 @@ public class PanelHoaDon extends JPanel {
         ));
         btnInHD.addActionListener(e -> hienDialogInHoaDon());
 
+        // FR-24: Nút hủy hóa đơn
+        JButton btnHuyHD = UITheme.createButton("Huy HĐ", UITheme.DANGER_BG, UITheme.DANGER);
+        btnHuyHD.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.DANGER_BG, 1, true),
+                new EmptyBorder(6, 8, 6, 8)
+        ));
+        btnHuyHD.addActionListener(e -> xuLyHuyHoaDon());
+
         pnlActionButtons.add(btnConfirmPay);
         pnlActionButtons.add(btnInHD);
+        pnlActionButtons.add(btnHuyHD);
 
         JPanel pnlCenterPay = new JPanel(new BorderLayout(0, 10));
         pnlCenterPay.setOpaque(false);
@@ -541,5 +550,35 @@ public class PanelHoaDon extends JPanel {
         p.add(l, BorderLayout.NORTH);
         p.add(comp, BorderLayout.CENTER);
         return p;
+    }
+
+    // FR-24: Hủy hóa đơn
+    private void xuLyHuyHoaDon() {
+        if (currentSelectedMaHD == null || currentSelectedMaHD.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui long chon hoa don can huy!", "Thong bao", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String lyDo = JOptionPane.showInputDialog(this,
+            "Nhap ly do huy hoa don " + currentSelectedMaHD + ":",
+            "Huy hoa don", JOptionPane.WARNING_MESSAGE);
+        if (lyDo == null) return;
+        lyDo = lyDo.trim();
+        if (lyDo.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ly do huy khong duoc de trong!", "Loi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "XAC NHAN huy hoa don " + currentSelectedMaHD + "?\nLy do: " + lyDo + "\n\nHanh dong nay KHONG the hoan tac!",
+            "Xac nhan huy hoa don", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        boolean ok = hoaDonDAO.huyHoaDon(currentSelectedMaHD);
+        if (ok) {
+            JOptionPane.showMessageDialog(this, "Da huy hoa don " + currentSelectedMaHD + " thanh cong!", "Thanh cong", JOptionPane.INFORMATION_MESSAGE);
+            currentSelectedMaHD = null;
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Hoa don da bi huy truoc do hoac co loi!", "Loi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

@@ -19,6 +19,10 @@ public class PanelThongKe extends JPanel {
     private DefaultTableModel modelBS;
     private JLabel lblFooterSummary;
     private JPanel pnlServiceGroupList;
+    private JTable tblVatTuHetHan;
+    private DefaultTableModel modelVatTuHetHan;
+    private JTable tblNhapXuatTon;
+    private DefaultTableModel modelNXT;
 
     private ThongKeDAO thongKeDAO = new ThongKeDAO();
 
@@ -222,6 +226,46 @@ public class PanelThongKe extends JPanel {
 
         pnlBody.add(pnlBottom);
 
+        // FR-67: Card vật tư sắp hết hạn
+        pnlBody.add(Box.createRigidArea(new Dimension(0, 14)));
+        JPanel pnlVatTuAlertCard = UITheme.createCard();
+        pnlVatTuAlertCard.setLayout(new BorderLayout(0, 8));
+        pnlVatTuAlertCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
+
+        JPanel pnlVTHeader = new JPanel(new BorderLayout());
+        pnlVTHeader.setOpaque(false);
+        JLabel lblVTH = new JLabel("Lo vat tu sap het han (trong 60 ngay)");
+        lblVTH.setFont(UITheme.FONT_SUBTITLE);
+        lblVTH.setForeground(UITheme.TEXT_DARK);
+        pnlVTHeader.add(lblVTH, BorderLayout.WEST);
+        pnlVatTuAlertCard.add(pnlVTHeader, BorderLayout.NORTH);
+
+        String[] colsVT = {"Ma lo", "Ten vat tu", "So lo", "So luong", "Han su dung", "Con lai"};
+        tblVatTuHetHan = new JTable(modelVatTuHetHan = new DefaultTableModel(colsVT, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        });
+        UITheme.formatTable(tblVatTuHetHan);
+        pnlVatTuAlertCard.add(new JScrollPane(tblVatTuHetHan), BorderLayout.CENTER);
+        pnlBody.add(pnlVatTuAlertCard);
+
+        // FR-66: Card Nhập-Xuất-Tồn
+        pnlBody.add(Box.createRigidArea(new Dimension(0, 14)));
+        JPanel pnlNXTCard = UITheme.createCard();
+        pnlNXTCard.setLayout(new BorderLayout(0, 8));
+        pnlNXTCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
+        JLabel lblNXTH = new JLabel("Bao cao Nhap-Xuat-Ton kho");
+        lblNXTH.setFont(UITheme.FONT_SUBTITLE);
+        lblNXTH.setForeground(UITheme.TEXT_DARK);
+        pnlNXTCard.add(lblNXTH, BorderLayout.NORTH);
+
+        String[] colsNXT = {"Ma VT", "Ten vat tu", "Don vi", "Tong nhap", "Tong xuat", "Ton cuoi"};
+        tblNhapXuatTon = new JTable(modelNXT = new DefaultTableModel(colsNXT, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        });
+        UITheme.formatTable(tblNhapXuatTon);
+        pnlNXTCard.add(new JScrollPane(tblNhapXuatTon), BorderLayout.CENTER);
+        pnlBody.add(pnlNXTCard);
+
         JScrollPane mainScroll = new JScrollPane(pnlBody);
         mainScroll.setBorder(null);
         mainScroll.setOpaque(false);
@@ -389,6 +433,17 @@ public class PanelThongKe extends JPanel {
             });
         }
         lblFooterSummary.setText(" TỔNG CỘNG: " + sumCa + " ca/lượt khám · " + FormatUtil.formatMoney(sumDt));
+
+        // FR-67
+        modelVatTuHetHan.setRowCount(0);
+        for (String[] row : thongKeDAO.getLoSapHetHan(60)) {
+            modelVatTuHetHan.addRow(row);
+        }
+        // FR-66
+        modelNXT.setRowCount(0);
+        for (String[] row : thongKeDAO.getBaoCaoNhapXuatTon()) {
+            modelNXT.addRow(row);
+        }
     }
 
     // Custom Bar Chart Component

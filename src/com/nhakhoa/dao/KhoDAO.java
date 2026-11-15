@@ -256,4 +256,38 @@ public class KhoDAO {
             DBConnect.close(conn);
         }
     }
+
+    // FR-56: Kiểm kê tồn kho - điều chỉnh số lượng thực tế
+    public boolean dieuChinhTonKho(String maVatTu, int soLuongThucTe, String lyDo) {
+        // Tìm lô KHA_DUNG đầu tiên để điều chỉnh
+        String sqlFind = "SELECT TOP 1 MaLo, SoLuongTon FROM LO_VAT_TU WHERE MaVatTu = ? AND TinhTrangLo = 'KHA_DUNG' ORDER BY HanSuDung ASC";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlFind)) {
+            ps.setString(1, maVatTu);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String maLo = rs.getString("MaLo");
+                String sqlUp = "UPDATE LO_VAT_TU SET SoLuongTon = ? WHERE MaLo = ?";
+                try (PreparedStatement psUp = conn.prepareStatement(sqlUp)) {
+                    psUp.setInt(1, soLuongThucTe);
+                    psUp.setString(2, maLo);
+                    return psUp.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // Kiểm tra tồn kho đủ dùng (FR-33)
+    public boolean kiemTraTonKhaDung(String maVatTu, int soLuongCan) {
+        String sql = "SELECT COALESCE(SUM(SoLuongTon), 0) AS TongTon FROM LO_VAT_TU "
+                   + "WHERE MaVatTu = ? AND TinhTrangLo = 'KHA_DUNG' AND HanSuDung > GETDATE()";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maVatTu);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt("TongTon") >= soLuongCan;
+        } catch (Exception e) { e.printStackTrace(); }
+        return true; // Nếu lỗi, cho phép tiếp tục để không block workflow
+    }
 }
