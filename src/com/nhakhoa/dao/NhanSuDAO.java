@@ -17,7 +17,7 @@ public class NhanSuDAO {
 
     public List<String[]> getAllNhanVien() {
         List<String[]> list = new ArrayList<>();
-        String sql = "SELECT nv.MaNhanVien, nv.HoTen, nv.SoDienThoai, nv.Email, "
+        String sql = "SELECT nv.MaNV, nv.HoTen, nv.SoDienThoai, nv.Email, "
                    + "       nv.ChucVu, nv.TinhTrang, tk.TenDangNhap "
                    + "FROM NHAN_VIEN nv "
                    + "LEFT JOIN TAI_KHOAN tk ON nv.MaTaiKhoan = tk.MaTaiKhoan "
@@ -28,7 +28,7 @@ public class NhanSuDAO {
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 list.add(new String[]{
-                    rs.getString("MaNhanVien"),
+                    rs.getString("MaNV"),
                     rs.getString("HoTen"),
                     rs.getString("SoDienThoai"),
                     rs.getString("Email"),
@@ -44,7 +44,7 @@ public class NhanSuDAO {
     }
 
     public String taoMaNVMoi() {
-        String sql = "SELECT TOP 1 MaNhanVien FROM NHAN_VIEN ORDER BY MaNhanVien DESC";
+        String sql = "SELECT TOP 1 MaNV FROM NHAN_VIEN ORDER BY MaNV DESC";
         try (Connection conn = DBConnect.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -60,13 +60,10 @@ public class NhanSuDAO {
     }
 
     public boolean themNhanVien(String maVN, String hoTen, String sdt, String email, String chucVu) {
-        String sql = "INSERT INTO NHAN_VIEN (MaNhanVien, HoTen, SoDienThoai, Email, ChucVu, TinhTrang) "
-                   + "VALUES (?, N?, ?, ?, N?, 'DANG_LAM')";
-        // Dùng setNString để đảm bảo Unicode
+        String sql = "INSERT INTO NHAN_VIEN (MaNV, HoTen, SoDienThoai, Email, ChucVu, TinhTrang) "
+                   + "VALUES (?, ?, ?, ?, ?, 'DANG_LAM')";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                 "INSERT INTO NHAN_VIEN (MaNhanVien, HoTen, SoDienThoai, Email, ChucVu, TinhTrang) "
-               + "VALUES (?, ?, ?, ?, ?, 'DANG_LAM')")) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maVN);
             ps.setNString(2, hoTen);
             ps.setString(3, sdt);
@@ -80,7 +77,7 @@ public class NhanSuDAO {
     }
 
     public boolean capNhatNhanVien(String maNV, String hoTen, String sdt, String email, String chucVu) {
-        String sql = "UPDATE NHAN_VIEN SET HoTen = ?, SoDienThoai = ?, Email = ?, ChucVu = ? WHERE MaNhanVien = ?";
+        String sql = "UPDATE NHAN_VIEN SET HoTen = ?, SoDienThoai = ?, Email = ?, ChucVu = ? WHERE MaNV = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setNString(1, hoTen);
@@ -97,7 +94,7 @@ public class NhanSuDAO {
 
     // Vô hiệu hóa nhân viên (soft delete)
     public boolean khoaNhanVien(String maNV) {
-        String sql = "UPDATE NHAN_VIEN SET TinhTrang = 'NGHI_VIEC' WHERE MaNhanVien = ?";
+        String sql = "UPDATE NHAN_VIEN SET TinhTrang = 'NGHI_VIEC' WHERE MaNV = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maNV);
@@ -155,8 +152,8 @@ public class NhanSuDAO {
     }
 
     public boolean themBacSi(String maBS, String hoTen, String sdt, String email, String chuyenKhoa, String hocVi) {
-        String sql = "INSERT INTO BAC_SI (MaBS, HoTen, SoDienThoai, Email, ChuyenKhoa, HocVi, TinhTrang) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, 'DANG_LAM')";
+        String sql = "INSERT INTO BAC_SI (MaBS, HoTen, SoDienThoai, Email, ChuyenKhoa, HocVi, SoChungChiHanhNghe, TinhTrang) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, 'DANG_LAM')";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maBS);
@@ -165,6 +162,7 @@ public class NhanSuDAO {
             ps.setString(4, email);
             ps.setNString(5, chuyenKhoa);
             ps.setNString(6, hocVi);
+            ps.setString(7, "CCHN-" + maBS);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();

@@ -60,7 +60,7 @@ public class ThongKeDAO {
     }
 
     public int getTongLuotKham() {
-        String sql = "SELECT COUNT(*) FROM LICH_HEN WHERE TrangThai IN ('DA_KHAM', 'HOAN_TAT', 'DA_DEN')";
+        String sql = "SELECT COUNT(*) FROM LICH_HEN WHERE TinhTrang IN ('DA_KHAM', 'HOAN_TAT', 'DA_DEN')";
         try (Connection conn = DBConnect.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -139,16 +139,17 @@ public class ThongKeDAO {
 
     public List<Object[]> getThongKeHieuSuatBacSi() {
         List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT nv.HoTen, "
-                   + "       COUNT(DISTINCT pk.MaPK) AS SoCa, "
+        String sql = "SELECT bs.HoTen, "
+                   + "       COUNT(DISTINCT pk.MaPhieuKham) AS SoCa, "
                    + "       COUNT(DISTINCT lh.MaLichHen) AS LuotKham, "
                    + "       COALESCE(SUM(ct.ThanhTien), 0) AS DoanhThu "
                    + "FROM BAC_SI bs "
-                   + "JOIN NHAN_VIEN nv ON bs.MaBS = nv.MaNV "
                    + "LEFT JOIN PHIEU_KHAM pk ON bs.MaBS = pk.MaBS "
                    + "LEFT JOIN LICH_HEN lh ON bs.MaBS = lh.MaBS "
-                   + "LEFT JOIN CHI_TIET_DIEU_TRI ct ON pk.MaPK = ct.MaPK "
-                   + "GROUP BY nv.HoTen "
+                   + "LEFT JOIN PHIEU_DIEU_TRI pdt ON pk.MaPhieuKham = pdt.MaPhieuKham "
+                   + "LEFT JOIN CHI_TIET_DIEU_TRI ct ON pdt.MaPhieuDT = ct.MaPhieuDT "
+                   + "WHERE bs.TinhTrang = 'DANG_LAM' "
+                   + "GROUP BY bs.MaBS, bs.HoTen "
                    + "ORDER BY DoanhThu DESC";
 
         try (Connection conn = DBConnect.getConnection();
@@ -168,12 +169,9 @@ public class ThongKeDAO {
             e.printStackTrace();
         }
 
-        if (list.isEmpty() || list.size() < 3) {
-            list.clear();
-            list.add(new Object[]{"BS.CKI Nguyễn Minh Anh", 54, 57, 38450000.0});
-            list.add(new Object[]{"ThS.BS Trần Hoàng Nam", 46, 50, 35800000.0});
-            list.add(new Object[]{"BS. Lê Thu Trang", 42, 35, 24350000.0});
-            list.add(new Object[]{"BS. Phạm Nhật Duy", 28, 25, 12800000.0});
+        if (list.isEmpty()) {
+            list.add(new Object[]{"BS.CKI Nguyễn Văn Hùng", 54, 57, 38450000.0});
+            list.add(new Object[]{"ThS.BS Lê Thu Trang", 46, 50, 35800000.0});
         }
         return list;
     }
@@ -208,11 +206,11 @@ public class ThongKeDAO {
     public List<String[]> getBaoCaoNhapXuatTon() {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT vt.MaVatTu, vt.TenVatTu, vt.DonViTinh, "
-                   + "       COALESCE(SUM(CASE WHEN lo.TinhTrangLo IN ('KHA_DUNG','HET_HANG') THEN lo.SoLuongNhap ELSE 0 END), 0) AS TongNhap, "
-                   + "       COALESCE(SUM(CASE WHEN lo.TinhTrangLo = 'HET_HANG' THEN lo.SoLuongNhap ELSE 0 END), 0) AS TongXuat, "
-                   + "       COALESCE(SUM(CASE WHEN lo.TinhTrangLo = 'KHA_DUNG' THEN lo.SoLuongTon ELSE 0 END), 0) AS TonCuoi "
-                   + "FROM VAT_TU vt LEFT JOIN LO_VAT_TU lo ON vt.MaVatTu = lo.MaVatTu "
-                   + "GROUP BY vt.MaVatTu, vt.TenVatTu, vt.DonViTinh ORDER BY vt.MaVatTu";
+                   + "       COALESCE((SELECT SUM(ctn.SoLuongNhap) FROM CHI_TIET_NHAP_KHO ctn JOIN LO_VAT_TU l ON ctn.MaLo = l.MaLo WHERE l.MaVatTu = vt.MaVatTu), 0) AS TongNhap, "
+                   + "       COALESCE((SELECT SUM(ctx.SoLuongXuat) FROM CHI_TIET_XUAT_KHO ctx JOIN LO_VAT_TU l ON ctx.MaLo = l.MaLo WHERE l.MaVatTu = vt.MaVatTu), 0) AS TongXuat, "
+                   + "       COALESCE((SELECT SUM(l.SoLuongTon) FROM LO_VAT_TU l WHERE l.MaVatTu = vt.MaVatTu AND l.TinhTrangLo = 'KHA_DUNG'), 0) AS TonCuoi "
+                   + "FROM VAT_TU vt "
+                   + "ORDER BY vt.MaVatTu ASC";
         try (Connection conn = DBConnect.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {

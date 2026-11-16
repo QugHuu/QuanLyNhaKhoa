@@ -48,7 +48,7 @@ CREATE TABLE NHAN_VIEN (
     Email VARCHAR(100) NULL,
     ChucVu NVARCHAR(50) NOT NULL CHECK (ChucVu IN (N'Quản lý', N'Lễ tân', N'Thu ngân', N'Nhân viên kho')),
     TinhTrang VARCHAR(20) NOT NULL DEFAULT 'DANG_LAM' CHECK (TinhTrang IN ('DANG_LAM', 'NGHI_VIEC')),
-    MaTaiKhoan VARCHAR(10) UNIQUE NOT NULL FOREIGN KEY REFERENCES TAI_KHOAN(MaTaiKhoan)
+    MaTaiKhoan VARCHAR(10) UNIQUE NULL FOREIGN KEY REFERENCES TAI_KHOAN(MaTaiKhoan)
 );
 
 -- 1.4 BAC_SI
@@ -56,11 +56,12 @@ CREATE TABLE BAC_SI (
     MaBS VARCHAR(10) PRIMARY KEY,
     HoTen NVARCHAR(100) NOT NULL,
     SoDienThoai VARCHAR(10) NOT NULL,
+    Email VARCHAR(100) NULL,
     ChuyenKhoa NVARCHAR(50) NULL,
     SoChungChiHanhNghe VARCHAR(30) UNIQUE NOT NULL,
     HocVi NVARCHAR(50) NULL,
-    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'DANG_LAM' CHECK (TinhTrang IN ('DANG_LAM', 'NGHI_VIEC')),
-    MaTaiKhoan VARCHAR(10) UNIQUE NOT NULL FOREIGN KEY REFERENCES TAI_KHOAN(MaTaiKhoan)
+    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'DANG_LAM' CHECK (TinhTrang IN ('DANG_LAM', 'NGHI_PHEP', 'NGHI_VIEC')),
+    MaTaiKhoan VARCHAR(10) UNIQUE NULL FOREIGN KEY REFERENCES TAI_KHOAN(MaTaiKhoan)
 );
 
 -- 1.5 CA_LAM_VIEC
@@ -134,7 +135,9 @@ CREATE TABLE LICH_HEN (
     GioBatDau TIME NOT NULL,
     GioKetThuc TIME NOT NULL,
     SoThuTuCho INT NOT NULL DEFAULT 0,
-    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'CHO_KHAM' CHECK (TinhTrang IN ('CHO_KHAM', 'DA_DEN', 'DA_KHAM', 'DA_HUY'))
+    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'CHO_KHAM' CHECK (TinhTrang IN ('CHO_KHAM', 'DA_DAT', 'DA_DEN', 'DANG_KHAM', 'DA_KHAM', 'HOAN_TAT', 'DA_HUY')),
+    LyDoKham NVARCHAR(255) NULL,
+    LyDoHuy NVARCHAR(255) NULL
 );
 
 -- --------------------------------------------------------------------
@@ -196,7 +199,7 @@ CREATE TABLE HOA_DON (
     TienGiamGia FLOAT NOT NULL DEFAULT 0,
     TienCocDaTru FLOAT NOT NULL DEFAULT 0,
     TongCanThanhToan FLOAT NOT NULL DEFAULT 0,
-    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'CHUA_TRA' CHECK (TinhTrang IN ('CHUA_TRA', 'CON_NO', 'DA_TRA', 'HUY'))
+    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'CHUA_TRA' CHECK (TinhTrang IN ('CHUA_TRA', 'CON_NO', 'DANG_NO', 'DA_TRA', 'HUY', 'DA_HUY'))
 );
 
 -- 3.7 PHIEU_DIEU_TRI
@@ -206,7 +209,7 @@ CREATE TABLE PHIEU_DIEU_TRI (
     MaHoaDon VARCHAR(12) NULL FOREIGN KEY REFERENCES HOA_DON(MaHoaDon),
     NgayLap DATETIME NOT NULL DEFAULT GETDATE(),
     KetQuaLamSang NVARCHAR(500) NULL,
-    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'HOAN_THANH' CHECK (TinhTrang IN ('DANG_DIEU_TRI', 'HOAN_THANH', 'HUY'))
+    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'HOAN_THANH' CHECK (TinhTrang IN ('CHO', 'DANG_LAM', 'DANG_DIEU_TRI', 'HOAN_THANH', 'DA_HUY', 'HUY'))
 );
 
 -- Cap nhat FK cho KE_HOACH_NIENG_RANG
@@ -214,13 +217,13 @@ ALTER TABLE KE_HOACH_NIENG_RANG ADD CONSTRAINT FK_KH_PDT FOREIGN KEY (MaPhieuDT)
 
 -- 3.8 CHI_TIET_DIEU_TRI
 CREATE TABLE CHI_TIET_DIEU_TRI (
+    MaCTDT INT IDENTITY(1,1) PRIMARY KEY,
     MaPhieuDT VARCHAR(12) NOT NULL FOREIGN KEY REFERENCES PHIEU_DIEU_TRI(MaPhieuDT),
     MaDV VARCHAR(10) NOT NULL FOREIGN KEY REFERENCES DICH_VU_NHA_KHOA(MaDV),
     ViTriRang NVARCHAR(50) NULL,
     SoLuong INT NOT NULL DEFAULT 1 CHECK (SoLuong > 0),
     DonGiaApDung FLOAT NOT NULL CHECK (DonGiaApDung >= 0),
-    ThanhTien FLOAT NOT NULL CHECK (ThanhTien >= 0),
-    PRIMARY KEY (MaPhieuDT, MaDV)
+    ThanhTien FLOAT NOT NULL CHECK (ThanhTien >= 0)
 );
 
 -- --------------------------------------------------------------------
@@ -295,7 +298,7 @@ CREATE TABLE HO_SO_CONG_NO (
     MaHoaDon VARCHAR(12) UNIQUE NOT NULL FOREIGN KEY REFERENCES HOA_DON(MaHoaDon),
     TongNoPhatSinh FLOAT NOT NULL CHECK (TongNoPhatSinh >= 0),
     SoDuNoConLai FLOAT NOT NULL CHECK (SoDuNoConLai >= 0),
-    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'CON_NO' CHECK (TinhTrang IN ('CON_NO', 'DA_HOAN_TAT', 'DIEU_CHINH'))
+    TinhTrang VARCHAR(20) NOT NULL DEFAULT 'CON_NO' CHECK (TinhTrang IN ('CON_NO', 'DANG_NO', 'DA_HOAN_TAT', 'DIEU_CHINH', 'DA_HUY'))
 );
 
 -- 5.2 PHIEU_THANH_TOAN
@@ -306,7 +309,7 @@ CREATE TABLE PHIEU_THANH_TOAN (
     NgayThanhToan DATETIME NOT NULL DEFAULT GETDATE(),
     LoaiGiaoDich VARCHAR(20) NOT NULL DEFAULT 'THU_TIEN' CHECK (LoaiGiaoDich IN ('THU_TIEN', 'DAT_COC', 'TRA_GOP', 'HOAN_TIEN')),
     SoTien FLOAT NOT NULL CHECK (SoTien > 0),
-    PhuongThuc VARCHAR(20) NOT NULL DEFAULT 'TIEN_MAT' CHECK (PhuongThuc IN ('TIEN_MAT', 'CHUYEN_KHOAN'))
+    PhuongThuc VARCHAR(20) NOT NULL DEFAULT 'TIEN_MAT' CHECK (PhuongThuc IN ('TIEN_MAT', 'CHUYEN_KHOAN', 'THE'))
 );
 
 -- --------------------------------------------------------------------
@@ -441,5 +444,171 @@ INSERT INTO DON_THUOC (MaDonThuoc, MaPhieuKham, NgayKe, LoiDanBacSi) VALUES
 INSERT INTO CHI_TIET_DON_THUOC (MaDonThuoc, TenThuoc, DonViTinh, SoLuong, LieuDung) VALUES
 ('DT001', N'Paracetamol 500mg', N'Viên', 10, N'Uống 1 viên khi đau nhức, cách nhau 6 tiếng'),
 ('DT001', N'Nước súc miệng Kin Gingival', N'Chai', 1, N'Súc miệng ngày 2 lần sáng và tối');
+
+-- --------------------------------------------------------------------
+-- 4.7. THIET KE CHI MUC TOI UU TRUY VAN (INDEXES)
+-- --------------------------------------------------------------------
+CREATE NONCLUSTERED INDEX IDX_BN_SDT_CCCD ON HO_SO_BENH_NHAN (SoDienThoai, SoCCCD);
+CREATE NONCLUSTERED INDEX IDX_LICH_HEN_CONFLICT ON LICH_HEN (NgayHen, GioBatDau, GioKetThuc, MaBS, MaGhe);
+CREATE NONCLUSTERED INDEX IDX_LO_VAT_TU_FEFO ON LO_VAT_TU (MaVatTu, HanSuDung, SoLuongTon, TinhTrangLo);
+CREATE NONCLUSTERED INDEX IDX_HOA_DON_BENH_NHAN ON HOA_DON (MaBN, NgayLap, TinhTrang);
+CREATE NONCLUSTERED INDEX IDX_AUDIT_LOG_TIME ON AUDIT_LOG (ThoiGian DESC, MaTaiKhoan);
+GO
+
+-- --------------------------------------------------------------------
+-- 4.8. THU TUC LUU TRU VA TRIGGER RANG BUOC NGHIEP VU (RB01 - RB16)
+-- --------------------------------------------------------------------
+
+-- RB06 & RB07: SP Kiem tra ca truc va chong trung lich Bac si / Ghe dieu tri
+CREATE OR ALTER PROCEDURE sp_DatLichHen
+    @MaLichHen VARCHAR(12),
+    @MaBN VARCHAR(10),
+    @MaBS VARCHAR(10),
+    @MaGhe VARCHAR(10),
+    @MaKeHoach VARCHAR(10) = NULL,
+    @NgayHen DATE,
+    @GioBatDau TIME,
+    @GioKetThuc TIME,
+    @LyDoKham NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Kiem tra gio ket thuc phai sau gio bat dau (RB06)
+    IF @GioKetThuc <= @GioBatDau
+    BEGIN
+        RAISERROR(N'Lỗi: Giờ kết thúc phải lớn hơn giờ bắt đầu!', 16, 1);
+        RETURN;
+    END
+
+    -- 2. Kiem tra ca truc hop le cua Bac si (RB06)
+    IF NOT EXISTS (
+        SELECT 1 FROM CA_LAM_VIEC 
+        WHERE MaBS = @MaBS AND NgayLamViec = @NgayHen 
+          AND GioBatDau <= @GioBatDau AND GioKetThuc >= @GioKetThuc 
+          AND TinhTrang = 'DANG_TRUC'
+    )
+    BEGIN
+        RAISERROR(N'Lỗi: Bác sĩ không có ca trực phân công trong khung giờ này!', 16, 1);
+        RETURN;
+    END
+
+    -- 3. Kiem tra trung lich thoi gian thuc cua Bac si hoac Ghe (RB07)
+    IF EXISTS (
+        SELECT 1 FROM LICH_HEN 
+        WHERE NgayHen = @NgayHen AND TinhTrang NOT IN ('DA_HUY')
+          AND (MaBS = @MaBS OR MaGhe = @MaGhe)
+          AND NOT (GioKetThuc <= @GioBatDau OR GioBatDau >= @GioKetThuc)
+    )
+    BEGIN
+        RAISERROR(N'Lỗi: Trùng lịch hẹn! Bác sĩ hoặc Ghế điều trị đã có người sử dụng trong khoảng thời gian này!', 16, 1);
+        RETURN;
+    END
+
+    -- 4. Them moi lich hen
+    INSERT INTO LICH_HEN (MaLichHen, MaBN, MaBS, MaGhe, MaKeHoach, NgayHen, GioBatDau, GioKetThuc, SoThuTuCho, TinhTrang, LyDoKham)
+    VALUES (@MaLichHen, @MaBN, @MaBS, @MaGhe, @MaKeHoach, @NgayHen, @GioBatDau, @GioKetThuc, 0, 'CHO_KHAM', @LyDoKham);
+END;
+GO
+
+-- RB12: Trigger tu dong xuat kho theo nguyen tac FEFO khi hoan thanh dieu tri
+CREATE OR ALTER TRIGGER trg_XuatKhoTuDong_FEFO
+ON PHIEU_DIEU_TRI
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM inserted i JOIN deleted d ON i.MaPhieuDT = d.MaPhieuDT 
+               WHERE i.TinhTrang = 'HOAN_THANH' AND d.TinhTrang <> 'HOAN_THANH')
+    BEGIN
+        DECLARE @MaPhieuDT VARCHAR(12), @MaTaiKhoan VARCHAR(10), @MaPhieuXuat VARCHAR(12);
+        SELECT @MaPhieuDT = MaPhieuDT FROM inserted;
+        SET @MaTaiKhoan = 'TK001';
+        SET @MaPhieuXuat = 'PXK_' + SUBSTRING(@MaPhieuDT, 4, 8);
+
+        IF NOT EXISTS (SELECT 1 FROM PHIEU_XUAT_KHO WHERE MaPhieuDT = @MaPhieuDT)
+        BEGIN
+            INSERT INTO PHIEU_XUAT_KHO (MaPhieuXuat, MaTaiKhoan, MaPhieuDT, NgayChungTu, LoaiXuat)
+            VALUES (@MaPhieuXuat, @MaTaiKhoan, @MaPhieuDT, GETDATE(), 'TU_DONG_FEFO');
+
+            DECLARE @MaVatTu VARCHAR(10), @SoLuongCanXuat FLOAT;
+            DECLARE cur_VT CURSOR FOR
+                SELECT dm.MaVatTu, SUM(ct.SoLuong * dm.SoLuongTieuHao)
+                FROM CHI_TIET_DIEU_TRI ct
+                JOIN DINH_MUC_VAT_TU dm ON ct.MaDV = dm.MaDV
+                WHERE ct.MaPhieuDT = @MaPhieuDT
+                GROUP BY dm.MaVatTu;
+
+            OPEN cur_VT;
+            FETCH NEXT FROM cur_VT INTO @MaVatTu, @SoLuongCanXuat;
+
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                DECLARE @MaLo VARCHAR(12), @TonLo INT, @XuatTuLo INT;
+                DECLARE cur_Lo CURSOR FOR
+                    SELECT MaLo, SoLuongTon 
+                    FROM LO_VAT_TU 
+                    WHERE MaVatTu = @MaVatTu AND TinhTrangLo = 'KHA_DUNG' AND HanSuDung > CAST(GETDATE() AS DATE)
+                    ORDER BY HanSuDung ASC;
+
+                OPEN cur_Lo;
+                FETCH NEXT FROM cur_Lo INTO @MaLo, @TonLo;
+
+                WHILE @@FETCH_STATUS = 0 AND @SoLuongCanXuat > 0
+                BEGIN
+                    IF @TonLo >= @SoLuongCanXuat
+                    BEGIN
+                        SET @XuatTuLo = CAST(CEILING(@SoLuongCanXuat) AS INT);
+                        SET @SoLuongCanXuat = 0;
+                    END
+                    ELSE
+                    BEGIN
+                        SET @XuatTuLo = @TonLo;
+                        SET @SoLuongCanXuat = @SoLuongCanXuat - @TonLo;
+                    END
+
+                    INSERT INTO CHI_TIET_XUAT_KHO (MaPhieuXuat, MaLo, SoLuongXuat)
+                    VALUES (@MaPhieuXuat, @MaLo, @XuatTuLo);
+
+                    UPDATE LO_VAT_TU 
+                    SET SoLuongTon = SoLuongTon - @XuatTuLo,
+                        TinhTrangLo = CASE WHEN (SoLuongTon - @XuatTuLo) <= 0 THEN 'HET_HANG' ELSE TinhTrangLo END
+                    WHERE MaLo = @MaLo;
+
+                    FETCH NEXT FROM cur_Lo INTO @MaLo, @TonLo;
+                END
+                CLOSE cur_Lo;
+                DEALLOCATE cur_Lo;
+
+                FETCH NEXT FROM cur_VT INTO @MaVatTu, @SoLuongCanXuat;
+            END
+            CLOSE cur_VT;
+            DEALLOCATE cur_VT;
+        END
+    END
+END;
+GO
+
+-- RB16: Trigger tu dong ghi nhat ky kiem toan khi huy hoa don
+CREATE OR ALTER TRIGGER trg_AuditLog_HoaDon
+ON HOA_DON
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM inserted i JOIN deleted d ON i.MaHoaDon = d.MaHoaDon 
+               WHERE i.TinhTrang IN ('HUY', 'DA_HUY') AND d.TinhTrang NOT IN ('HUY', 'DA_HUY'))
+    BEGIN
+        INSERT INTO AUDIT_LOG (MaLog, MaTaiKhoan, ThoiGian, HanhDong, DoiTuongTacDong, LyDo)
+        SELECT 'LOG' + SUBSTRING(CONVERT(VARCHAR(36), NEWID()), 1, 8),
+               'TK001',
+               GETDATE(),
+               'HUY_HOA_DON',
+               i.MaHoaDon,
+               N'Hủy hóa đơn thanh toán điều trị'
+        FROM inserted i;
+    END
+END;
+GO
 
 PRINT N'=== KHOI TAO CSDL QUAN LY NHA KHOA THANH CONG! ===';

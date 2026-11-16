@@ -163,6 +163,14 @@ public class HoaDonDAO {
                 psPTT.executeUpdate();
             }
 
+            // Gán MaHoaDon cho các Phiếu điều trị hoàn thành của bệnh nhân chưa có hóa đơn (RB14)
+            String sqlLinkPDT = "UPDATE PHIEU_DIEU_TRI SET MaHoaDon = ? WHERE MaHoaDon IS NULL AND MaPhieuKham IN (SELECT MaPhieuKham FROM PHIEU_KHAM WHERE MaBN = ?)";
+            try (PreparedStatement psLink = conn.prepareStatement(sqlLinkPDT)) {
+                psLink.setString(1, maHD);
+                psLink.setString(2, maBN);
+                psLink.executeUpdate();
+            } catch (Exception ex) {}
+
             // 3. Nếu còn thiếu -> Tạo HO_SO_CONG_NO (RB15: trả góp / ghi nợ)
             if (tienTraNgay < tongCanTra) {
                 double noPhatSinh = tongCanTra - tienTraNgay;
@@ -286,13 +294,11 @@ public class HoaDonDAO {
     // Lấy chi tiết dịch vụ trong hóa đơn
     public java.util.List<String[]> getChiTietHoaDon(String maHD) {
         java.util.List<String[]> list = new java.util.ArrayList<>();
-        // Lấy từ CHI_TIET_DIEU_TRI qua PHIEU_DIEU_TRI join HOA_DON qua MaBN + NgayLap
-        String sql = "SELECT dv.TenDichVu, ctdt.SoLuong, dv.DonGia, (ctdt.SoLuong * dv.DonGia) AS ThanhTien "
+        String sql = "SELECT dv.TenDV AS TenDichVu, ctdt.SoLuong, ctdt.DonGiaApDung AS DonGia, ctdt.ThanhTien "
                    + "FROM CHI_TIET_DIEU_TRI ctdt "
                    + "JOIN PHIEU_DIEU_TRI pdt ON ctdt.MaPhieuDT = pdt.MaPhieuDT "
-                   + "JOIN HOA_DON hd ON pdt.MaBN = hd.MaBN AND CAST(pdt.NgayDieuTri AS DATE) = CAST(hd.NgayLap AS DATE) "
-                   + "JOIN DICH_VU dv ON ctdt.MaDV = dv.MaDV "
-                   + "WHERE hd.MaHoaDon = ?";
+                   + "JOIN DICH_VU_NHA_KHOA dv ON ctdt.MaDV = dv.MaDV "
+                   + "WHERE pdt.MaHoaDon = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maHD);
