@@ -63,6 +63,41 @@ public class BenhNhanDAO {
         return list;
     }
 
+    public List<BenhNhan> getByBacSi(String maBS) {
+        List<BenhNhan> list = new ArrayList<>();
+        String sql = "SELECT * FROM HO_SO_BENH_NHAN WHERE MaBN IN ("
+                   + "   SELECT DISTINCT MaBN FROM LICH_HEN WHERE MaBS = ? "
+                   + "   UNION "
+                   + "   SELECT DISTINCT MaBN FROM PHIEU_KHAM WHERE MaBS = ?"
+                   + ") ORDER BY MaBN DESC";
+
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, maBS);
+            ps.setString(2, maBS);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    BenhNhan bn = new BenhNhan(
+                        rs.getString("MaBN"),
+                        rs.getString("HoTen"),
+                        rs.getDate("NgaySinh"),
+                        rs.getString("SoCCCD"),
+                        rs.getString("SoDienThoai"),
+                        rs.getString("TienSuBenh"),
+                        rs.getString("TinhTrang"),
+                        rs.getTimestamp("NgayTao")
+                    );
+                    list.add(bn);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public List<BenhNhan> timKiem(String keyword) {
         List<BenhNhan> list = new ArrayList<>();
         String sql = "SELECT * FROM HO_SO_BENH_NHAN WHERE HoTen LIKE ? OR SoDienThoai LIKE ? OR MaBN LIKE ? ORDER BY MaBN DESC";

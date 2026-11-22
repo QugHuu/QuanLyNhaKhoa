@@ -3,6 +3,7 @@ package com.nhakhoa.gui;
 import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.bus.LichHenBUS;
 import com.nhakhoa.dao.DichVuDAO;
+import com.nhakhoa.dao.KhoDAO;
 import com.nhakhoa.dao.PhieuKhamDAO;
 import com.nhakhoa.model.*;
 import com.nhakhoa.util.FormatUtil;
@@ -16,9 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PanelKhamBenh extends JPanel {
+    private TaiKhoan currentUser;
     private JComboBox<LichHen> cboBenhNhanCho;
     private JLabel lblPatientBadge, lblAllergyNotice;
-    private JTextField txtTrieuChung, txtChanDoan, txtLoiDan, txtViTriRangChon;
+    private JTextField txtTrieuChung, txtChanDoan, txtPhuongPhap, txtLoiDan, txtGhiChu;
     private JComboBox<DichVu> cboDichVu;
     private JSpinner spSoLuongDV;
     private JLabel lblTongTamTinh;
@@ -28,14 +30,19 @@ public class PanelKhamBenh extends JPanel {
 
     private List<ChiTietDieuTri> listCTDT = new ArrayList<>();
     private List<ChiTietDonThuoc> listThuoc = new ArrayList<>();
-    private List<JButton> toothButtons = new ArrayList<>();
 
     private LichHenBUS lichHenBUS = new LichHenBUS();
     private BenhNhanBUS benhNhanBUS = new BenhNhanBUS();
     private DichVuDAO dichVuDAO = new DichVuDAO();
     private PhieuKhamDAO phieuKhamDAO = new PhieuKhamDAO();
+    private KhoDAO khoDAO = new KhoDAO();
 
     public PanelKhamBenh() {
+        this(null);
+    }
+
+    public PanelKhamBenh(TaiKhoan user) {
+        this.currentUser = user;
         setLayout(new BorderLayout(0, 14));
         setBorder(new EmptyBorder(16, 20, 16, 20));
         setBackground(UITheme.BG_MAIN);
@@ -50,7 +57,10 @@ public class PanelKhamBenh extends JPanel {
         lblHeading.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblHeading.setForeground(UITheme.TEXT_DARK);
 
-        JLabel lblSub = new JLabel("Khám lâm sàng, chẩn đoán sơ đồ răng và chỉ định thủ thuật");
+        String subText = (currentUser != null && currentUser.isBacSi()) ?
+                "Hàng đợi bệnh nhân tiếp nhận của Bác sĩ: " + currentUser.getHoTen() :
+                "Khám lâm sàng, chẩn đoán bệnh án và chỉ định điều trị";
+        JLabel lblSub = new JLabel(subText);
         lblSub.setFont(UITheme.FONT_SMALL);
         lblSub.setForeground(UITheme.TEXT_MUTED);
 
@@ -60,13 +70,18 @@ public class PanelKhamBenh extends JPanel {
         JPanel pnlHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlHeaderActions.setOpaque(false);
 
+        JButton btnLichSuKham = UITheme.createButton("Lịch sử ca khám", Color.WHITE, UITheme.TEXT_DARK);
+        btnLichSuKham.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+        btnLichSuKham.addActionListener(e -> hienDialogLichSuKham());
+
         JButton btnLuuKham = UITheme.createButton("Lưu phiếu khám", Color.WHITE, UITheme.TEXT_DARK);
         btnLuuKham.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
         btnLuuKham.addActionListener(e -> xuLyLuuCaKham());
 
-        JButton btnHoanTat = UITheme.createButton("Hoàn tất điều trị & Trừ kho (FEFO)", UITheme.PRIMARY, Color.WHITE);
+        JButton btnHoanTat = UITheme.createButton("Hoàn tất điều trị", UITheme.PRIMARY, Color.WHITE);
         btnHoanTat.addActionListener(e -> xuLyLuuCaKham());
 
+        pnlHeaderActions.add(btnLichSuKham);
         pnlHeaderActions.add(btnLuuKham);
         pnlHeaderActions.add(btnHoanTat);
 
@@ -115,71 +130,39 @@ public class PanelKhamBenh extends JPanel {
         pnlTopGroup.add(pnlHeader, BorderLayout.NORTH);
         pnlTopGroup.add(pnlBannerCard, BorderLayout.SOUTH);
 
-        // ==================== 3. BODY: 2 CỘT (SƠ ĐỒ RĂNG + DỊCH VỤ) ====================
+        // ==================== 3. BODY: 2 CỘT (KHÁM BỆNH ÁN + DỊCH VỤ) ====================
         JPanel pnlBody = new JPanel(new BorderLayout(14, 0));
         pnlBody.setOpaque(false);
 
-        // CỘT TRÁI (Sơ đồ răng + Khám lâm sàng)
+        // CỘT TRÁI (Hồ sơ khám lâm sàng & Bệnh án)
         JPanel pnlLeft = new JPanel(new BorderLayout(0, 12));
         pnlLeft.setOpaque(false);
 
-        // Sơ đồ răng Card (Theo Mockup 05)
-        JPanel pnlDentalChartCard = UITheme.createCard();
-        pnlDentalChartCard.setLayout(new BorderLayout(0, 10));
-
-        JPanel pnlChartTitle = new JPanel(new BorderLayout());
-        pnlChartTitle.setOpaque(false);
-        JLabel lblChart = new JLabel("Sơ đồ răng (Người lớn 18 - 48)");
-        lblChart.setFont(UITheme.FONT_SUBTITLE);
-        lblChart.setForeground(UITheme.TEXT_DARK);
-
-        txtViTriRangChon = new JTextField("Răng 36", 10);
-        txtViTriRangChon.setEditable(false);
-        txtViTriRangChon.setBackground(new Color(241, 245, 249));
-
-        JPanel pnlSelTooth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
-        pnlSelTooth.setOpaque(false);
-        pnlSelTooth.add(new JLabel("Đang chọn:"));
-        pnlSelTooth.add(txtViTriRangChon);
-
-        pnlChartTitle.add(lblChart, BorderLayout.WEST);
-        pnlChartTitle.add(pnlSelTooth, BorderLayout.EAST);
-
-        // Grid Sơ đồ răng 2 hàm
-        JPanel pnlTeethGrid = new JPanel(new GridLayout(2, 1, 0, 6));
-        pnlTeethGrid.setOpaque(false);
-
-        // Hàm trên (18..11 | 21..28)
-        JPanel pnlUpperTeeth = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
-        pnlUpperTeeth.setOpaque(false);
-        int[] upper = {18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28};
-        for (int t : upper) pnlUpperTeeth.add(taoNutRang(t));
-
-        // Hàm dưới (48..41 | 31..38)
-        JPanel pnlLowerTeeth = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
-        pnlLowerTeeth.setOpaque(false);
-        int[] lower = {48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38};
-        for (int t : lower) pnlLowerTeeth.add(taoNutRang(t));
-
-        pnlTeethGrid.add(pnlUpperTeeth);
-        pnlTeethGrid.add(pnlLowerTeeth);
-
-        pnlDentalChartCard.add(pnlChartTitle, BorderLayout.NORTH);
-        pnlDentalChartCard.add(pnlTeethGrid, BorderLayout.CENTER);
-
-        // Card Khám lâm sàng
         JPanel pnlClinicalCard = UITheme.createCard();
-        pnlClinicalCard.setLayout(new GridLayout(3, 1, 0, 8));
+        pnlClinicalCard.setLayout(new BorderLayout(0, 12));
 
-        txtTrieuChung = new JTextField("Đau nhức răng hàm dưới khi ăn đồ nóng lạnh");
-        txtChanDoan = new JTextField("Sâu răng số 36 độ 2, viêm nướu nhẹ");
-        txtLoiDan = new JTextField("Tránh nhai đồ quá cứng trong 24h, tái khám sau 1 tuần");
+        JLabel lblClinicalTitle = new JLabel("Hồ sơ khám lâm sàng & Điều trị");
+        lblClinicalTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblClinicalTitle.setForeground(UITheme.PRIMARY);
 
-        pnlClinicalCard.add(taoField("Triệu chứng lâm sàng:", txtTrieuChung));
-        pnlClinicalCard.add(taoField("Chẩn đoán bác sĩ:", txtChanDoan));
-        pnlClinicalCard.add(taoField("Lời dặn sau thủ thuật:", txtLoiDan));
+        JPanel pnlClinicalForm = new JPanel(new GridLayout(5, 1, 0, 10));
+        pnlClinicalForm.setOpaque(false);
 
-        pnlLeft.add(pnlDentalChartCard, BorderLayout.NORTH);
+        txtTrieuChung = new JTextField("Đau nhức ê buốt vùng răng hàm khi ăn nhai đồ nóng lạnh");
+        txtChanDoan = new JTextField("Sâu răng ngà nông, viêm nướu nhẹ quanh chân răng");
+        txtPhuongPhap = new JTextField("Trám răng phục hồi thẩm mỹ Composite, vệ sinh cạo vôi răng");
+        txtLoiDan = new JTextField("Tránh nhai thức ăn quá cứng trong 24h, vệ sinh răng miệng ngày 2 lần");
+        txtGhiChu = new JTextField("Bệnh nhân hợp tác tốt, không có dấu hiệu dị ứng thuốc tê");
+
+        pnlClinicalForm.add(taoField("Triệu chứng lâm sàng ban đầu:", txtTrieuChung));
+        pnlClinicalForm.add(taoField("Chẩn đoán chuyên môn của Bác sĩ:", txtChanDoan));
+        pnlClinicalForm.add(taoField("Phương pháp / Phác đồ điều trị:", txtPhuongPhap));
+        pnlClinicalForm.add(taoField("Lời dặn sau thủ thuật & Hướng dẫn vệ sinh:", txtLoiDan));
+        pnlClinicalForm.add(taoField("Ghi chú tiến trình theo dõi:", txtGhiChu));
+
+        pnlClinicalCard.add(lblClinicalTitle, BorderLayout.NORTH);
+        pnlClinicalCard.add(pnlClinicalForm, BorderLayout.CENTER);
+
         pnlLeft.add(pnlClinicalCard, BorderLayout.CENTER);
 
         // CỘT PHẢI (Chỉ định dịch vụ & Kê đơn thuốc - 460px)
@@ -210,7 +193,7 @@ public class PanelKhamBenh extends JPanel {
         pnlDVAdd.add(spSoLuongDV);
         pnlDVAdd.add(btnAddDV);
 
-        String[] headersDV = {"Dịch vụ nha khoa", "Răng", "SL", "Thành tiền"};
+        String[] headersDV = {"Dịch vụ điều trị", "Số lượng", "Đơn giá", "Thành tiền"};
         modelDV = new DefaultTableModel(headersDV, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -280,32 +263,6 @@ public class PanelKhamBenh extends JPanel {
         taiDanhSachDichVu();
     }
 
-    private JButton taoNutRang(int soRang) {
-        JButton btn = new JButton(String.valueOf(soRang));
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        btn.setPreferredSize(new Dimension(38, 30));
-        btn.setBackground(soRang == 36 ? UITheme.PRIMARY_LIGHT : Color.WHITE);
-        btn.setForeground(soRang == 36 ? UITheme.PRIMARY : UITheme.TEXT_DARK);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setBorder(BorderFactory.createLineBorder(soRang == 36 ? UITheme.PRIMARY : UITheme.BORDER_COLOR, 1, true));
-
-        btn.addActionListener(e -> {
-            for (JButton b : toothButtons) {
-                b.setBackground(Color.WHITE);
-                b.setForeground(UITheme.TEXT_DARK);
-                b.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
-            }
-            btn.setBackground(UITheme.PRIMARY_LIGHT);
-            btn.setForeground(UITheme.PRIMARY);
-            btn.setBorder(BorderFactory.createLineBorder(UITheme.PRIMARY, 1, true));
-            txtViTriRangChon.setText("Răng " + soRang);
-        });
-
-        toothButtons.add(btn);
-        return btn;
-    }
-
     private JPanel taoField(String label, JComponent comp) {
         JPanel p = new JPanel(new BorderLayout(0, 2));
         p.setOpaque(false);
@@ -319,7 +276,11 @@ public class PanelKhamBenh extends JPanel {
     public void taiDanhSachHangDoi() {
         cboBenhNhanCho.removeAllItems();
         List<LichHen> list = lichHenBUS.getLichHenDaDen();
+        String currentMaBS = (currentUser != null && currentUser.isBacSi()) ? currentUser.getMaBacSi() : null;
         for (LichHen lh : list) {
+            if (currentMaBS != null && !currentMaBS.equals(lh.getMaBS())) {
+                continue; // Bác sĩ chỉ thấy danh sách bệnh nhân của mình!
+            }
             cboBenhNhanCho.addItem(lh);
         }
         capNhatThongTinBN();
@@ -341,12 +302,24 @@ public class PanelKhamBenh extends JPanel {
                 lblAllergyNotice.setForeground(UITheme.PRIMARY);
                 lblAllergyNotice.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
             }
+            if (txtTrieuChung.getText().trim().isEmpty()) {
+                txtTrieuChung.setText("Đau nhức ê buốt vùng răng hàm khi ăn nhai đồ nóng lạnh");
+                txtChanDoan.setText("Sâu răng ngà nông, viêm nướu nhẹ quanh chân răng");
+                txtPhuongPhap.setText("Trám răng phục hồi thẩm mỹ Composite, vệ sinh cạo vôi răng");
+                txtLoiDan.setText("Tránh nhai thức ăn quá cứng trong 24h, vệ sinh răng miệng ngày 2 lần");
+                txtGhiChu.setText("Bệnh nhân hợp tác tốt, không có dấu hiệu dị ứng thuốc tê");
+            }
         } else {
             lblPatientBadge.setText("  Chưa có bệnh nhân ở phòng chờ  ");
             lblAllergyNotice.setText("  Vui lòng tiếp nhận tại sảnh  ");
             lblAllergyNotice.setBackground(new Color(241, 245, 249));
             lblAllergyNotice.setForeground(UITheme.TEXT_MUTED);
             lblAllergyNotice.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+            txtTrieuChung.setText("");
+            txtChanDoan.setText("");
+            txtPhuongPhap.setText("");
+            txtLoiDan.setText("");
+            txtGhiChu.setText("");
         }
     }
 
@@ -417,10 +390,24 @@ public class PanelKhamBenh extends JPanel {
         int sl = (int) spSoLuongDV.getValue();
         double tt = sl * dv.getDonGia();
 
-        ChiTietDieuTri ct = new ChiTietDieuTri("", dv.getMaDV(), dv.getTenDV(), txtViTriRangChon.getText().trim(), sl, dv.getDonGia(), tt);
-        listCTDT.add(ct);
+        ChiTietDieuTri ct = new ChiTietDieuTri("", dv.getMaDV(), dv.getTenDV(), "Răng hàm", sl, dv.getDonGia(), tt);
 
-        modelDV.addRow(new Object[]{dv.getTenDV(), txtViTriRangChon.getText().trim(), sl, FormatUtil.formatMoney(tt)});
+        // LUẬT 2: Kiểm tra tồn kho khả dụng (còn hạn + đủ định mức) trước khi cho phép chỉ định dịch vụ
+        List<ChiTietDieuTri> dsKiemTra = new ArrayList<>(listCTDT);
+        dsKiemTra.add(ct);
+        String thieuVT = khoDAO.kiemTraDinhMucVatTuKhaDung(dsKiemTra);
+        if (thieuVT != null) {
+            JOptionPane.showMessageDialog(this,
+                    "CẢNH BÁO TỒN KHO VẬT TƯ!\n\n"
+                    + "Không đủ vật tư khả dụng trong kho để thực hiện dịch vụ này:\n"
+                    + thieuVT + "\n\n"
+                    + "Vui lòng thông báo Thủ kho nhập bổ sung vật tư trước khi chỉ định.",
+                    "Không đủ vật tư khả dụng", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        listCTDT.add(ct);
+        modelDV.addRow(new Object[]{dv.getTenDV(), sl, FormatUtil.formatMoney(dv.getDonGia()), FormatUtil.formatMoney(tt)});
 
         double tong = 0;
         for (ChiTietDieuTri c : listCTDT) tong += c.getThanhTien();
@@ -428,10 +415,43 @@ public class PanelKhamBenh extends JPanel {
     }
 
     private void xuLyLuuCaKham() {
+        if (currentUser != null && !currentUser.isBacSi() && !currentUser.isQuanLy()) {
+            JOptionPane.showMessageDialog(this,
+                    "Chức năng khám chữa bệnh và lưu ca điều trị chỉ dành cho Bác sĩ điều trị!",
+                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         LichHen lh = (LichHen) cboBenhNhanCho.getSelectedItem();
         if (lh == null) {
-            JOptionPane.showMessageDialog(this, "Không có bệnh nhân nào trong hàng đợi khám!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Hiện không có bệnh nhân nào trong hàng đợi khám!\n"
+                    + "Vui lòng tiếp nhận bệnh nhân vào khám trước.",
+                    "Chưa có bệnh nhân ở phòng chờ", JOptionPane.WARNING_MESSAGE);
             return;
+        }
+
+        if (currentUser != null && currentUser.isBacSi() && currentUser.getMaBacSi() != null) {
+            if (!currentUser.getMaBacSi().equals(lh.getMaBS())) {
+                JOptionPane.showMessageDialog(this,
+                        "Bệnh nhân này thuộc phân công khám của Bác sĩ khác (" + lh.getTenBS() + ")!\nBạn không thể lưu ca điều trị này.",
+                        "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+
+        // Kiểm tra tồn kho khả dụng trước khi lưu ca điều trị
+        if (!listCTDT.isEmpty()) {
+            String thieuVT = khoDAO.kiemTraDinhMucVatTuKhaDung(listCTDT);
+            if (thieuVT != null) {
+                JOptionPane.showMessageDialog(this,
+                        "TỪ CHỐI LƯU CA ĐIỀU TRỊ!\n\n"
+                        + "Kho vật tư hiện tại không đủ số lượng khả dụng:\n"
+                        + thieuVT + "\n\n"
+                        + "Vui lòng kiểm tra lại tồn kho vật tư trước khi xác nhận hoàn tất.",
+                        "Từ chối lưu - Thiếu vật tư", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         }
 
         try {
@@ -445,16 +465,135 @@ public class PanelKhamBenh extends JPanel {
 
             boolean ok = phieuKhamDAO.luuCaKham(pk, listCTDT, txtLoiDan.getText().trim(), listThuoc);
             if (ok) {
-                JOptionPane.showMessageDialog(this, "Đã lưu kết quả điều trị cho " + lh.getTenBN() + "!\nHệ thống tự động trừ tồn kho theo FEFO (RB12).", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                String thongBao = "LƯU KẾT QUẢ ĐIỀU TRỊ THÀNH CÔNG!\n\n"
+                        + "• Bệnh nhân: " + lh.getTenBN() + " (" + lh.getMaBN() + ")\n"
+                        + "• Bác sĩ phụ trách: " + (currentUser != null ? currentUser.getHoTen() : lh.getTenBS()) + "\n"
+                        + "• Mã phiếu khám: " + pk.getMaPhieuKham() + "\n"
+                        + "• Trạng thái: Đã hoàn tất ca khám và điều trị.";
+
+                JOptionPane.showMessageDialog(this, thongBao, "Khám bệnh thành công", JOptionPane.INFORMATION_MESSAGE);
+
                 listCTDT.clear();
                 listThuoc.clear();
                 modelDV.setRowCount(0);
                 modelThuoc.setRowCount(0);
                 lblTongTamTinh.setText("Tổng tạm tính: 0 đ");
                 taiDanhSachHangDoi();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Không thể lưu kết quả điều trị! Vui lòng kiểm tra lại kết nối CSDL hoặc dữ liệu.",
+                        "Lỗi lưu trữ", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void hienDialogLichSuKham() {
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Danh sách Phiếu khám & Hồ sơ điều trị", true);
+        dlg.setSize(850, 560);
+        dlg.setLocationRelativeTo(this);
+
+        JPanel pnl = new JPanel(new BorderLayout(0, 10));
+        pnl.setBackground(Color.WHITE);
+        pnl.setBorder(new EmptyBorder(14, 16, 14, 16));
+
+        JLabel lblTitle = new JLabel("LỊCH SỬ CÁC PHIẾU KHÁM & ĐIỀU TRỊ ĐÃ LẬP");
+        lblTitle.setFont(UITheme.FONT_SUBTITLE);
+        lblTitle.setForeground(UITheme.PRIMARY);
+
+        String[] headers = {"Mã Phiếu", "Bệnh Nhân", "Bác Sĩ", "Ngày Khám", "Chẩn Đoán", "Trạng Thái"};
+        DefaultTableModel model = new DefaultTableModel(headers, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable tbl = new JTable(model);
+        UITheme.formatTable(tbl);
+        tbl.getColumnModel().getColumn(5).setCellRenderer(new UITheme.StatusBadgeRenderer());
+
+        List<PhieuKham> listPK = phieuKhamDAO.getAll();
+        String currentMaBS = (currentUser != null && currentUser.isBacSi()) ? currentUser.getMaBacSi() : null;
+        java.text.SimpleDateFormat sdfNgay = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        for (PhieuKham pk : listPK) {
+            if (currentMaBS != null && !currentMaBS.equals(pk.getMaBS())) {
+                continue;
+            }
+            model.addRow(new Object[]{
+                pk.getMaPhieuKham(),
+                pk.getTenBN(),
+                pk.getTenBS(),
+                pk.getNgayKham() != null ? sdfNgay.format(pk.getNgayKham()) : "---",
+                pk.getChanDoan(),
+                pk.getTinhTrang()
+            });
+        }
+
+        Runnable xemChiTiet = () -> {
+            int row = tbl.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(dlg, "Vui lòng chọn một phiếu khám trong bảng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String maPK = model.getValueAt(row, 0).toString();
+            String html = phieuKhamDAO.getChiTietPhieuKhamHTML(maPK);
+
+            JDialog dlgDetail = new JDialog(dlg, "Chi tiết phiếu khám - " + maPK, true);
+            dlgDetail.setSize(680, 650);
+            dlgDetail.setLocationRelativeTo(dlg);
+
+            JEditorPane ep = new JEditorPane();
+            ep.setContentType("text/html");
+            ep.setEditable(false);
+            ep.setText(html);
+            ep.setCaretPosition(0);
+
+            JPanel pnlD = new JPanel(new BorderLayout(0, 10));
+            pnlD.setBackground(Color.WHITE);
+            pnlD.setBorder(new EmptyBorder(10, 14, 10, 14));
+            pnlD.add(new JScrollPane(ep), BorderLayout.CENTER);
+
+            JPanel pnlB = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+            pnlB.setOpaque(false);
+            JButton btnIn = UITheme.createButton("In phiếu khám", UITheme.PRIMARY, Color.WHITE);
+            btnIn.addActionListener(e -> {
+                try { ep.print(); } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dlgDetail, "Lỗi in: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            JButton btnDong = UITheme.createButton("Đóng", Color.WHITE, UITheme.TEXT_DARK);
+            btnDong.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+            btnDong.addActionListener(e -> dlgDetail.dispose());
+            pnlB.add(btnIn);
+            pnlB.add(btnDong);
+            pnlD.add(pnlB, BorderLayout.SOUTH);
+
+            dlgDetail.setContentPane(pnlD);
+            dlgDetail.setVisible(true);
+        };
+
+        tbl.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) xemChiTiet.run();
+            }
+        });
+
+        JPanel pnlBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlBottom.setOpaque(false);
+        JButton btnXem = UITheme.createButton("Xem & In phiếu khám", UITheme.PRIMARY, Color.WHITE);
+        btnXem.addActionListener(e -> xemChiTiet.run());
+        JButton btnClose = UITheme.createButton("Đóng", Color.WHITE, UITheme.TEXT_DARK);
+        btnClose.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+        btnClose.addActionListener(e -> dlg.dispose());
+        pnlBottom.add(btnXem);
+        pnlBottom.add(btnClose);
+
+        pnl.add(lblTitle, BorderLayout.NORTH);
+        pnl.add(new JScrollPane(tbl), BorderLayout.CENTER);
+        pnl.add(pnlBottom, BorderLayout.SOUTH);
+
+        dlg.setContentPane(pnl);
+        dlg.setVisible(true);
     }
 }

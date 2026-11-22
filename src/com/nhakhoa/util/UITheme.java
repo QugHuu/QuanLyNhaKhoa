@@ -106,23 +106,24 @@ public class UITheme {
             }
 
             switch (val) {
-                case "HOAT_DONG": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Hoat dong  "); break;
-                case "DA_TRA": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Da tra  "); break;
-                case "HOAN_THANH": case "DA_HOAN_TAT": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Hoan thanh  "); break;
-                case "DANG_AP_DUNG": case "KHA_DUNG": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Kha dung  "); break;
-                case "DA_KHAM": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Da kham  "); break;
-                case "CHO_KHAM": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Cho kham  "); break;
-                case "CHUA_TRA": case "CON_NO": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Con no  "); break;
-                case "DANG_THUC_HIEN": case "DANG_DIEU_TRI": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Dang xu ly  "); break;
-                case "DANG_LAM": case "DANG_TRUC": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Dang lam  "); break;
-                case "DA_DEN": lbl.setBackground(INFO_BG); lbl.setForeground(INFO_TEXT); lbl.setText("  Da den  "); break;
-                case "TAM_KHOA": case "KHOA": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Bi khoa  "); break;
-                case "HET_HAN": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Het han  "); break;
-                case "HET_HANG": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Het hang  "); break;
-                case "DA_HUY": case "HUY": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Da huy  "); break;
-                case "NGHI_VIEC": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Nghi viec  "); break;
-                case "NGHI_PHEP": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Nghi phep  "); break;
-                default: lbl.setBackground(Color.WHITE); lbl.setForeground(TEXT_DARK); break;
+                case "HOAT_DONG": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Hoạt động  "); break;
+                case "DA_TRA": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Đã trả  "); break;
+                case "HOAN_THANH": case "DA_HOAN_TAT": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Hoàn thành  "); break;
+                case "DANG_AP_DUNG": case "KHA_DUNG": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Khả dụng  "); break;
+                case "DA_KHAM": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Đã khám  "); break;
+                case "CHO_KHAM": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Chờ khám  "); break;
+                case "CHUA_TRA": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Chưa trả  "); break;
+                case "CON_NO": case "DANG_NO": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Còn nợ  "); break;
+                case "DANG_THUC_HIEN": case "DANG_DIEU_TRI": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Đang điều trị  "); break;
+                case "DANG_LAM": case "DANG_TRUC": lbl.setBackground(PRIMARY_LIGHT); lbl.setForeground(PRIMARY); lbl.setText("  Đang làm việc  "); break;
+                case "DA_DEN": lbl.setBackground(INFO_BG); lbl.setForeground(INFO_TEXT); lbl.setText("  Đã đến  "); break;
+                case "TAM_KHOA": case "KHOA": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Bị khóa  "); break;
+                case "HET_HAN": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Hết hạn  "); break;
+                case "HET_HANG": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Hết hàng  "); break;
+                case "DA_HUY": case "HUY": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Đã hủy  "); break;
+                case "NGHI_VIEC": lbl.setBackground(DANGER_BG); lbl.setForeground(DANGER_TEXT); lbl.setText("  Nghỉ việc  "); break;
+                case "NGHI_PHEP": lbl.setBackground(WARNING_BG); lbl.setForeground(WARNING_TEXT); lbl.setText("  Nghỉ phép  "); break;
+                default: lbl.setBackground(Color.WHITE); lbl.setForeground(TEXT_DARK); lbl.setText("  " + val + "  "); break;
             }
             lbl.setOpaque(true);
             return lbl;

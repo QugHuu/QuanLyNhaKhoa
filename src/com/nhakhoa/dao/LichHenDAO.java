@@ -132,6 +132,48 @@ public class LichHenDAO {
         return false;
     }
 
+    public List<LichHen> getLichBacSiTheoNgay(String maBS, java.sql.Date ngayHen) {
+        List<LichHen> list = new ArrayList<>();
+        String sql = "SELECT lh.MaLichHen, lh.MaBN, bn.HoTen AS TenBN, bn.SoDienThoai, "
+                + "       lh.MaBS, bs.HoTen AS TenBS, lh.MaGhe, lh.MaKeHoach, "
+                + "       lh.NgayHen, lh.GioBatDau, lh.GioKetThuc, lh.SoThuTuCho, lh.TinhTrang "
+                + "FROM LICH_HEN lh "
+                + "JOIN HO_SO_BENH_NHAN bn ON lh.MaBN = bn.MaBN "
+                + "JOIN BAC_SI bs ON lh.MaBS = bs.MaBS "
+                + "WHERE lh.MaBS = ? AND lh.NgayHen = ? AND lh.TinhTrang <> 'DA_HUY' "
+                + "ORDER BY lh.GioBatDau ASC";
+
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, maBS);
+            ps.setDate(2, ngayHen);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    LichHen lh = new LichHen(
+                            rs.getString("MaLichHen"),
+                            rs.getString("MaBN"),
+                            rs.getString("TenBN"),
+                            rs.getString("SoDienThoai"),
+                            rs.getString("MaBS"),
+                            rs.getString("TenBS"),
+                            rs.getString("MaGhe"),
+                            rs.getString("MaKeHoach"),
+                            rs.getDate("NgayHen"),
+                            rs.getString("GioBatDau"),
+                            rs.getString("GioKetThuc"),
+                            rs.getInt("SoThuTuCho"),
+                            rs.getString("TinhTrang"));
+                    list.add(lh);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean them(LichHen lh) {
         String sql = "INSERT INTO LICH_HEN (MaLichHen, MaBN, MaBS, MaGhe, NgayHen, GioBatDau, GioKetThuc, SoThuTuCho, TinhTrang) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";

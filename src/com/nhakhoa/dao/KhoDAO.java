@@ -1,5 +1,6 @@
 package com.nhakhoa.dao;
 
+import com.nhakhoa.model.ChiTietDieuTri;
 import com.nhakhoa.model.LoVatTu;
 import com.nhakhoa.model.VatTu;
 import com.nhakhoa.util.DBConnect;
@@ -9,7 +10,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Xử lý dữ liệu Kho và Vật tư theo nguyên tắc FEFO (First Expired, First Out)
@@ -288,6 +291,82 @@ public class KhoDAO {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getInt("TongTon") >= soLuongCan;
         } catch (Exception e) { e.printStackTrace(); }
-        return true; // Nếu lỗi, cho phép tiếp tục để không block workflow
+        return true;
+    }
+
+    /**
+     * LUẬT 2: KIỂM TRA ĐỊNH MỨC VẬT TƯ KHẢ DỤNG (Còn hạn sử dụng + Đủ định mức)
+     * Trả về thông báo lỗi chi tiết nếu thiếu, hoặc null nếu đủ.
+     * Chưa trừ kho ở bước này!
+     */
+    public String kiemTraDinhMucVatTuKhaDung(List<ChiTietDieuTri> listCTDT) {
+        if (listCTDT == null || listCTDT.isEmpty()) return null;
+
+        Map<String, Double> mapCanDung = new HashMap<>();
+        Map<String, String> mapTenVT = new HashMap<>();
+        Map<String, String> mapDVT = new HashMap<>();
+
+        String sqlDM = "SELECT dm.MaVatTu, vt.TenVatTu, vt.DonViTinh, dm.SoLuongTieuHao "
+                     + "FROM DINH_MUC_VAT_TU dm "
+                     + "JOIN VAT_TU vt ON dm.MaVatTu = vt.MaVatTu "
+                     + "WHERE dm.MaDV = ?";
+
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlDM)) {
+
+            for (ChiTietDieuTri ct : listCTDT) {
+                ps.setString(1, ct.getMaDV());
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String maVT = rs.getString("MaVatTu");
+                        String tenVT = rs.getString("TenVatTu");
+                        String dvt = rs.getString("DonViTinh");
+                        double tieuHao = rs.getDouble("SoLuongTieuHao") * ct.getSoLuong();
+
+                        mapCanDung.put(maVT, mapCanDung.getOrDefault(maVT, 0.0) + tieuHao);
+                        mapTenVT.put(maVT, tenVT);
+                        mapDVT.put(maVT, dvt);
+                    }
+                }
+            }
+
+            if (mapCanDung.isEmpty()) return null;
+
+            String sqlTon = "SELECT COALESCE(SUM(SoLuongTon), 0) AS TonKhaDung "
+                          + "FROM LO_VAT_TU "
+                          + "WHERE MaVatTu = ? AND TinhTrangLo = 'KHA_DUNG' AND HanSuDung > CAST(GETDATE() AS DATE)";
+
+            try (PreparedStatement psTon = conn.prepareStatement(sqlTon)) {
+                StringBuilder sbThieu = new StringBuilder();
+                for (Map.Entry<String, Double> entry : mapCanDung.entrySet()) {
+                    String maVT = entry.getKey();
+                    double canDung = entry.getValue();
+
+                    psTon.setString(1, maVT);
+                    try (ResultSet rsTon = psTon.executeQuery()) {
+                        double tonKhaDung = 0;
+                        if (rsTon.next()) {
+                            tonKhaDung = rsTon.getDouble("TonKhaDung");
+                        }
+
+                        if (tonKhaDung < canDung) {
+                            if (sbThieu.length() > 0) sbThieu.append("\n");
+                            sbThieu.append("• ").append(mapTenVT.get(maVT))
+                                   .append(" (Mã: ").append(maVT).append("): Định mức cần ")
+                                   .append(canDung).append(" ").append(mapDVT.get(maVT))
+                                   .append(" | Tồn kho khả dụng (còn hạn) chỉ có: ")
+                                   .append((int)tonKhaDung).append(" ").append(mapDVT.get(maVT));
+                        }
+                    }
+                }
+
+                if (sbThieu.length() > 0) {
+                    return sbThieu.toString();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

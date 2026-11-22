@@ -5,6 +5,7 @@ C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\bus\TaiKhoanBUS.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\BenhNhanDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\DichVuDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\HoaDonDAO.java
+C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\KeHoachNiengRangDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\KhoDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\LichHenDAO.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\dao\NhanSuDAO.java
@@ -29,6 +30,7 @@ C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\DichVu.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\DonThuoc.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\HoaDon.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\HoSoCongNo.java
+C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\KeHoachNiengRang.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\LichHen.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\LoVatTu.java
 C:\Users\admin\QuanLyNhaKhoa\src\com\nhakhoa\model\PhieuDieuTri.java

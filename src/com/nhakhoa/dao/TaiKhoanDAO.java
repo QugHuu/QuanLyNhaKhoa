@@ -15,7 +15,8 @@ public class TaiKhoanDAO {
     public TaiKhoan dangNhap(String username, String password) {
         String sql = "SELECT tk.MaTaiKhoan, tk.TenDangNhap, tk.MatKhau, tk.SoLanNhapSai, tk.TinhTrang, "
                    + "       tk.MaVaiTro, vt.TenVaiTro, "
-                   + "       COALESCE(nv.HoTen, bs.HoTen, N'Người dùng') AS HoTen "
+                   + "       COALESCE(nv.HoTen, bs.HoTen, N'Người dùng') AS HoTen, "
+                   + "       bs.MaBS "
                    + "FROM TAI_KHOAN tk "
                    + "JOIN VAI_TRO vt ON tk.MaVaiTro = vt.MaVaiTro "
                    + "LEFT JOIN NHAN_VIEN nv ON tk.MaTaiKhoan = nv.MaTaiKhoan "
@@ -44,6 +45,7 @@ public class TaiKhoanDAO {
                 String hoTen = rs.getString("HoTen");
 
                 TaiKhoan tk = new TaiKhoan(maTK, username, passInDB, soLanSai, tinhTrang, maVaiTro, tenVaiTro, hoTen);
+                tk.setMaBacSi(rs.getString("MaBS"));
 
                 // Kiểm tra tài khoản đã bị khóa chưa
                 if ("TAM_KHOA".equalsIgnoreCase(tinhTrang)) {

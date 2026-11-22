@@ -2,6 +2,7 @@ package com.nhakhoa.gui;
 
 import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.model.BenhNhan;
+import com.nhakhoa.model.TaiKhoan;
 import com.nhakhoa.util.UITheme;
 
 import javax.swing.*;
@@ -26,8 +27,14 @@ public class PanelBenhNhan extends JPanel {
     private BenhNhanBUS benhNhanBUS = new BenhNhanBUS();
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     private BenhNhan selectedBN = null;
+    private TaiKhoan currentUser;
 
     public PanelBenhNhan() {
+        this(null);
+    }
+
+    public PanelBenhNhan(TaiKhoan user) {
+        this.currentUser = user;
         setLayout(new BorderLayout(0, 16));
         setBorder(new EmptyBorder(16, 20, 16, 20));
         setBackground(UITheme.BG_MAIN);
@@ -54,6 +61,9 @@ public class PanelBenhNhan extends JPanel {
 
         JButton btnThemBN = UITheme.createButton("+ Thêm bệnh nhân", UITheme.PRIMARY, Color.WHITE);
         btnThemBN.addActionListener(e -> hienDialogThemBN(null));
+        if (currentUser != null && currentUser.isBacSi()) {
+            btnThemBN.setVisible(false); // Bác sĩ không tiếp nhận thêm bệnh nhân hành chính
+        }
         pnlHeaderActions.add(btnThemBN);
 
         pnlHeader.add(pnlTitle, BorderLayout.WEST);
@@ -119,6 +129,9 @@ public class PanelBenhNhan extends JPanel {
         btnEditProfile.addActionListener(e -> {
             if (selectedBN != null) hienDialogThemBN(selectedBN);
         });
+        if (currentUser != null && currentUser.isBacSi()) {
+            btnEditProfile.setVisible(false); // Bác sĩ chỉ xem hồ sơ và bệnh án
+        }
 
         pnlProfileTop.add(pnlNameBox, BorderLayout.WEST);
         pnlProfileTop.add(btnEditProfile, BorderLayout.EAST);
@@ -168,15 +181,31 @@ public class PanelBenhNhan extends JPanel {
         JPanel pnlTabHistory = new JPanel(new BorderLayout());
         pnlTabHistory.setOpaque(false);
 
-        String[] headersH = {"Ngày điều trị", "Thủ thuật / Dịch vụ nha khoa", "Bác sĩ phụ trách", "Kết quả lâm sàng", "Trạng thái"};
+        String[] headersH = {"Mã Phiếu", "Ngày khám", "Thủ thuật / Dịch vụ nha khoa", "Bác sĩ phụ trách", "Chẩn đoán & Kết quả", "Trạng thái"};
         modelHistory = new DefaultTableModel(headersH, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
         tblTreatmentHistory = new JTable(modelHistory);
         UITheme.formatTable(tblTreatmentHistory);
-        tblTreatmentHistory.getColumnModel().getColumn(4).setCellRenderer(new UITheme.StatusBadgeRenderer());
+        tblTreatmentHistory.getColumnModel().getColumn(5).setCellRenderer(new UITheme.StatusBadgeRenderer());
+        tblTreatmentHistory.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    xemChiTietPhieuKhamDaChon();
+                }
+            }
+        });
+
+        JPanel pnlHistoryBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        pnlHistoryBottom.setOpaque(false);
+        JButton btnXemPhieu = UITheme.createButton("Xem chi tiết phiếu khám & Đơn thuốc", UITheme.PRIMARY, Color.WHITE);
+        btnXemPhieu.addActionListener(e -> xemChiTietPhieuKhamDaChon());
+        pnlHistoryBottom.add(btnXemPhieu);
+
         pnlTabHistory.add(new JScrollPane(tblTreatmentHistory), BorderLayout.CENTER);
+        pnlTabHistory.add(pnlHistoryBottom, BorderLayout.SOUTH);
 
         tabProfile.addTab("Lịch sử khám & điều trị", pnlTabHistory);
         tabProfile.addTab("Kế hoạch niềng răng", new JLabel("Lộ trình chỉnh nha dài hạn liên kết hồ sơ.", JLabel.CENTER));
@@ -201,20 +230,42 @@ public class PanelBenhNhan extends JPanel {
 
     public void taiDuLieu() {
         modelListPatients.setRowCount(0);
-        List<BenhNhan> list = benhNhanBUS.getAll();
+        List<BenhNhan> list;
+        if (currentUser != null && currentUser.isBacSi() && currentUser.getMaBacSi() != null) {
+            list = benhNhanBUS.getByBacSi(currentUser.getMaBacSi());
+        } else {
+            list = benhNhanBUS.getAll();
+        }
         for (BenhNhan bn : list) {
             modelListPatients.addRow(new Object[]{bn.getMaBN(), bn.getHoTen(), bn.getSoDienThoai()});
         }
         if (!list.isEmpty()) {
             tblListPatients.setRowSelectionInterval(0, 0);
+        } else {
+            selectedBN = null;
+            lblProfileName.setText("Chưa có bệnh nhân phụ trách");
+            lblProfileSub.setText("---");
+            lblInfoDOB.setText("Ngày sinh: ---");
+            lblInfoPhone.setText("SĐT: ---");
+            lblInfoCCCD.setText("CCCD: ---");
+            lblInfoStatus.setText("Trạng thái: ---");
+            lblAllergyAlert.setText("Không có dữ liệu bệnh nhân");
         }
     }
 
     private void xuLyTimKiem() {
         modelListPatients.setRowCount(0);
-        List<BenhNhan> list = benhNhanBUS.timKiem(txtSearch.getText().trim());
-        for (BenhNhan bn : list) {
-            modelListPatients.addRow(new Object[]{bn.getMaBN(), bn.getHoTen(), bn.getSoDienThoai()});
+        String kw = txtSearch.getText().trim().toLowerCase();
+        List<BenhNhan> baseList;
+        if (currentUser != null && currentUser.isBacSi() && currentUser.getMaBacSi() != null) {
+            baseList = benhNhanBUS.getByBacSi(currentUser.getMaBacSi());
+        } else {
+            baseList = benhNhanBUS.timKiem(kw);
+        }
+        for (BenhNhan bn : baseList) {
+            if (kw.isEmpty() || bn.getHoTen().toLowerCase().contains(kw) || bn.getSoDienThoai().contains(kw) || bn.getMaBN().toLowerCase().contains(kw)) {
+                modelListPatients.addRow(new Object[]{bn.getMaBN(), bn.getHoTen(), bn.getSoDienThoai()});
+            }
         }
     }
 
@@ -238,16 +289,82 @@ public class PanelBenhNhan extends JPanel {
                     lblAllergyAlert.setText("Tiền sử bệnh lý: Không có ghi nhận dị ứng đặc biệt");
                 }
 
-                // Nạp lịch sử mẫu
+                // Nạp lịch sử điều trị thực tế từ CSDL
                 modelHistory.setRowCount(0);
-                modelHistory.addRow(new Object[]{"10/11/2026", "Cạo vôi răng & Đánh bóng (2 hàm)", "BS. Nguyễn Văn Hùng", "Cao răng độ 1, làm sạch êm", "HOAN_THANH"});
-                modelHistory.addRow(new Object[]{"15/09/2026", "Trám răng thẩm mỹ Composite - Răng 36", "BS. Nguyễn Văn Hùng", "Xoang sâu loại II, khớp cắn chuẩn", "HOAN_THANH"});
+                com.nhakhoa.dao.PhieuKhamDAO pkDAO = new com.nhakhoa.dao.PhieuKhamDAO();
+                List<Object[]> dsLichSu = pkDAO.getLichSuDieuTriCuaBenhNhan(maBN);
+                for (Object[] row : dsLichSu) {
+                    modelHistory.addRow(row);
+                }
+                if (dsLichSu.isEmpty()) {
+                    modelHistory.addRow(new Object[]{"Chưa có", "---", "Bệnh nhân mới - Chưa có ca điều trị", "---", "Hồ sơ mới mở", "CHO_KHAM"});
+                }
                 break;
             }
         }
     }
 
+    private void xemChiTietPhieuKhamDaChon() {
+        int row = tblTreatmentHistory.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một ca khám trong bảng lịch sử điều trị!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String maPK = modelHistory.getValueAt(row, 0).toString();
+        if ("Chưa có".equals(maPK) || maPK.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Bệnh nhân này chưa có phiếu khám điều trị trong hồ sơ!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        com.nhakhoa.dao.PhieuKhamDAO pkDAO = new com.nhakhoa.dao.PhieuKhamDAO();
+        String htmlContent = pkDAO.getChiTietPhieuKhamHTML(maPK);
+
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Hồ sơ Phiếu khám & Điều trị - " + maPK, true);
+        dlg.setSize(680, 650);
+        dlg.setLocationRelativeTo(this);
+
+        JEditorPane ep = new JEditorPane();
+        ep.setContentType("text/html");
+        ep.setEditable(false);
+        ep.setText(htmlContent);
+        ep.setCaretPosition(0);
+
+        JPanel pnl = new JPanel(new BorderLayout(0, 10));
+        pnl.setBackground(Color.WHITE);
+        pnl.setBorder(new EmptyBorder(12, 14, 12, 14));
+        pnl.add(new JScrollPane(ep), BorderLayout.CENTER);
+
+        JPanel pnlB = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlB.setOpaque(false);
+
+        JButton btnIn = UITheme.createButton("In phiếu khám", UITheme.PRIMARY, Color.WHITE);
+        btnIn.addActionListener(e -> {
+            try {
+                ep.print();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dlg, "Không thể kết nối máy in: " + ex.getMessage(), "Lỗi in", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JButton btnDong = UITheme.createButton("Đóng", Color.WHITE, UITheme.TEXT_DARK);
+        btnDong.setBorder(BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true));
+        btnDong.addActionListener(e -> dlg.dispose());
+
+        pnlB.add(btnIn);
+        pnlB.add(btnDong);
+        pnl.add(pnlB, BorderLayout.SOUTH);
+
+        dlg.setContentPane(pnl);
+        dlg.setVisible(true);
+    }
+
     private void hienDialogThemBN(BenhNhan bnEdit) {
+        if (currentUser != null && currentUser.isBacSi()) {
+            JOptionPane.showMessageDialog(this,
+                    "Nghiệp vụ tiếp nhận và chỉnh sửa thông tin hành chính bệnh nhân do Lễ tân hoặc Quản lý thực hiện!",
+                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         boolean isEdit = (bnEdit != null);
         JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), isEdit ? "Cập nhật hồ sơ bệnh nhân" : "Thêm bệnh nhân mới", true);
         dlg.setSize(440, 500);

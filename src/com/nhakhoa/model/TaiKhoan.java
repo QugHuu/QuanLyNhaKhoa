@@ -12,6 +12,7 @@ public class TaiKhoan {
     private String maVaiTro;
     private String tenVaiTro;
     private String hoTen;
+    private String maBacSi;
 
     public TaiKhoan() {}
 
@@ -49,6 +50,9 @@ public class TaiKhoan {
 
     public String getHoTen() { return hoTen; }
     public void setHoTen(String hoTen) { this.hoTen = hoTen; }
+
+    public String getMaBacSi() { return maBacSi; }
+    public void setMaBacSi(String maBacSi) { this.maBacSi = maBacSi; }
 
     public boolean isQuanLy() {
         return "VT_QUANLY".equalsIgnoreCase(maVaiTro);

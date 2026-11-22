@@ -20,7 +20,7 @@ public class LoginForm extends JFrame {
     public LoginForm() {
         setTitle("Đăng nhập - Hệ thống quản lý phòng khám Nha Khoa");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(460, 560);
+        setSize(460, 500);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -34,7 +34,7 @@ public class LoginForm extends JFrame {
         // Card đăng nhập ở giữa
         JPanel card = new JPanel(new BorderLayout(0, 16));
         card.setBackground(Color.WHITE);
-        card.setPreferredSize(new Dimension(380, 470));
+        card.setPreferredSize(new Dimension(380, 420));
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
                 new EmptyBorder(28, 28, 24, 28)
@@ -104,7 +104,7 @@ public class LoginForm extends JFrame {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 JOptionPane.showMessageDialog(LoginForm.this,
-                        "Vui lòng liên hệ Quản trị viên (Admin) hoặc Bộ phận IT phòng khám để cấp lại mật khẩu!\n\nTài khoản demo nhanh:\n- Quản lý: admin / admin123\n- Lễ tân: letan01 / 123456\n- Bác sĩ: bacsi01 / 123456\n- Thủ kho: kho01 / 123456",
+                        "Vui lòng liên hệ Quản trị viên (Admin) hoặc Bộ phận kỹ thuật phòng khám để được hỗ trợ cấp lại mật khẩu!",
                         "Hỗ trợ quên mật khẩu", JOptionPane.INFORMATION_MESSAGE);
             }
         });
@@ -133,23 +133,14 @@ public class LoginForm extends JFrame {
         pnlForm.add(pnlExtra);
         pnlForm.add(btnLogin);
 
-        // Footer: Chọn nhanh quyền & Trợ giúp
-        JPanel pnlFooter = new JPanel(new BorderLayout(0, 8));
+        // Footer: Trợ giúp
+        JPanel pnlFooter = new JPanel(new BorderLayout());
         pnlFooter.setOpaque(false);
 
-        JLabel lblHelp = new JLabel("Chưa có tài khoản? Liên hệ quản trị phòng khám.", JLabel.CENTER);
+        JLabel lblHelp = new JLabel("Hệ thống quản lý phòng khám Nha Khoa © 2026", JLabel.CENTER);
         lblHelp.setFont(UITheme.FONT_TINY);
         lblHelp.setForeground(UITheme.TEXT_MUTED);
-
-        JPanel pnlQuick = new JPanel(new GridLayout(1, 4, 4, 0));
-        pnlQuick.setOpaque(false);
-        pnlQuick.add(createMiniBtn("Quản lý", "admin"));
-        pnlQuick.add(createMiniBtn("Lễ tân", "letan"));
-        pnlQuick.add(createMiniBtn("Bác sĩ", "bacsi"));
-        pnlQuick.add(createMiniBtn("Thủ kho", "thukho"));
-
-        pnlFooter.add(lblHelp, BorderLayout.NORTH);
-        pnlFooter.add(pnlQuick, BorderLayout.SOUTH);
+        pnlFooter.add(lblHelp, BorderLayout.CENTER);
 
         card.add(pnlHeader, BorderLayout.NORTH);
         card.add(pnlForm, BorderLayout.CENTER);
@@ -157,22 +148,6 @@ public class LoginForm extends JFrame {
 
         pnlRoot.add(card);
         setContentPane(pnlRoot);
-    }
-
-    private JButton createMiniBtn(String text, String user) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        btn.setBackground(new Color(241, 245, 249));
-        btn.setForeground(UITheme.TEXT_MUTED);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.putClientProperty("JButton.buttonType", "roundRect");
-        btn.setBorder(new EmptyBorder(4, 4, 4, 4));
-        btn.addActionListener(e -> {
-            txtUsername.setText(user);
-            txtPassword.setText("123456");
-        });
-        return btn;
     }
 
     private void xuLyDangNhap() {
@@ -192,7 +167,7 @@ public class LoginForm extends JFrame {
                 main.setVisible(true);
             });
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi đăng nhập (RB05)", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

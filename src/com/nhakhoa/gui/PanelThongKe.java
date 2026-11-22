@@ -219,7 +219,7 @@ public class PanelThongKe extends JPanel {
         pnlHlItems.add(Box.createRigidArea(new Dimension(0, 10)));
         pnlHlItems.add(createHighlightItem("32,8 triệu đ", "Doanh thu trung bình theo ghế / tuần", UITheme.INFO));
         pnlHlItems.add(Box.createRigidArea(new Dimension(0, 10)));
-        pnlHlItems.add(createHighlightItem("03 lô cận hạn", "Cần ưu tiên xuất kho vật tư theo nguyên tắc FEFO", UITheme.WARNING));
+        pnlHlItems.add(createHighlightItem("03 lô cận hạn", "Cần ưu tiên xuất kho sử dụng trước", UITheme.WARNING));
 
         pnlHighlightCard.add(pnlHlItems, BorderLayout.CENTER);
         pnlBottom.add(pnlHighlightCard, gbc);
@@ -234,13 +234,13 @@ public class PanelThongKe extends JPanel {
 
         JPanel pnlVTHeader = new JPanel(new BorderLayout());
         pnlVTHeader.setOpaque(false);
-        JLabel lblVTH = new JLabel("Lo vat tu sap het han (trong 60 ngay)");
+        JLabel lblVTH = new JLabel("Lô vật tư sắp hết hạn (trong 60 ngày)");
         lblVTH.setFont(UITheme.FONT_SUBTITLE);
         lblVTH.setForeground(UITheme.TEXT_DARK);
         pnlVTHeader.add(lblVTH, BorderLayout.WEST);
         pnlVatTuAlertCard.add(pnlVTHeader, BorderLayout.NORTH);
 
-        String[] colsVT = {"Ma lo", "Ten vat tu", "So lo", "So luong", "Han su dung", "Con lai"};
+        String[] colsVT = {"Mã lô", "Tên vật tư", "Số lô", "Số lượng", "Hạn sử dụng", "Còn lại"};
         tblVatTuHetHan = new JTable(modelVatTuHetHan = new DefaultTableModel(colsVT, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         });
@@ -253,12 +253,12 @@ public class PanelThongKe extends JPanel {
         JPanel pnlNXTCard = UITheme.createCard();
         pnlNXTCard.setLayout(new BorderLayout(0, 8));
         pnlNXTCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
-        JLabel lblNXTH = new JLabel("Bao cao Nhap-Xuat-Ton kho");
+        JLabel lblNXTH = new JLabel("Báo cáo Nhập - Xuất - Tồn kho");
         lblNXTH.setFont(UITheme.FONT_SUBTITLE);
         lblNXTH.setForeground(UITheme.TEXT_DARK);
         pnlNXTCard.add(lblNXTH, BorderLayout.NORTH);
 
-        String[] colsNXT = {"Ma VT", "Ten vat tu", "Don vi", "Tong nhap", "Tong xuat", "Ton cuoi"};
+        String[] colsNXT = {"Mã VT", "Tên vật tư", "Đơn vị", "Tổng nhập", "Tổng xuất", "Tồn cuối"};
         tblNhapXuatTon = new JTable(modelNXT = new DefaultTableModel(colsNXT, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         });

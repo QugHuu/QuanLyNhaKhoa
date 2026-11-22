@@ -24,8 +24,14 @@ public class PanelKhoVatTu extends JPanel {
     private KhoDAO khoDAO = new KhoDAO();
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     private List<LoVatTu> cachedListLo = new java.util.ArrayList<>();
+    private com.nhakhoa.model.TaiKhoan currentUser;
 
     public PanelKhoVatTu() {
+        this(null);
+    }
+
+    public PanelKhoVatTu(com.nhakhoa.model.TaiKhoan user) {
+        this.currentUser = user;
         setLayout(new BorderLayout(0, 14));
         setBorder(new EmptyBorder(16, 20, 16, 20));
         setBackground(UITheme.BG_MAIN);
@@ -40,7 +46,7 @@ public class PanelKhoVatTu extends JPanel {
         lblHeading.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblHeading.setForeground(UITheme.TEXT_DARK);
 
-        JLabel lblSub = new JLabel("Theo dõi tồn kho, số lô và hạn sử dụng theo nguyên tắc FEFO");
+        JLabel lblSub = new JLabel("Theo dõi tồn kho, hạn sử dụng và quản lý các lô vật tư y tế");
         lblSub.setFont(UITheme.FONT_SMALL);
         lblSub.setForeground(UITheme.TEXT_MUTED);
 
@@ -57,7 +63,7 @@ public class PanelKhoVatTu extends JPanel {
         JButton btnNhapKho = UITheme.createButton("+ Nhập lô mới", UITheme.PRIMARY, Color.WHITE);
         btnNhapKho.addActionListener(e -> hienDialogNhapKho());
 
-        JButton btnKiemKe = UITheme.createButton("Kiem ke kho", UITheme.BG_CARD, UITheme.INFO);
+        JButton btnKiemKe = UITheme.createButton("Kiểm kê kho", UITheme.BG_CARD, UITheme.INFO);
         btnKiemKe.addActionListener(e -> xuLyKiemKe());
 
         pnlHeaderActions.add(btnXuatKho);
@@ -77,9 +83,9 @@ public class PanelKhoVatTu extends JPanel {
         lblExpired = new JLabel("0 lô");
 
         pnlKPI.add(taoMetricCard("Tổng mặt hàng", lblTotalItems, "Thuốc và vật tư tiêu hao"));
-        pnlKPI.add(taoMetricCard("Lô cận hạn (≤ 30 ngày)", lblExpiringSoon, "Ưu tiên xuất FEFO"));
+        pnlKPI.add(taoMetricCard("Lô cận hạn (≤ 30 ngày)", lblExpiringSoon, "Cần ưu tiên xuất trước"));
         pnlKPI.add(taoMetricCard("Dưới định mức tồn", lblLowStock, "Cần nhập bổ sung"));
-        pnlKPI.add(taoMetricCard("Lô đã hết hạn", lblExpired, "Khóa tự động (RB11)"));
+        pnlKPI.add(taoMetricCard("Lô đã hết hạn", lblExpired, "Tạm khóa sử dụng"));
 
         // ==================== 3. AMBER ALERT BANNER ====================
         JPanel pnlAlertBanner = new JPanel(new BorderLayout(8, 0));
@@ -89,7 +95,7 @@ public class PanelKhoVatTu extends JPanel {
                 new EmptyBorder(10, 14, 10, 14)
         ));
 
-        JLabel lblAlertText = new JLabel("Có các lô thuốc tê và khẩu trang cận hạn sử dụng trong 30 ngày tới. Hệ thống đang tự động ưu tiên xuất theo FEFO.");
+        JLabel lblAlertText = new JLabel("Có các lô vật tư cận hạn sử dụng trong 30 ngày tới. Vui lòng lưu ý xuất dùng trước.");
         lblAlertText.setFont(UITheme.FONT_BOLD);
         lblAlertText.setForeground(UITheme.WARNING_TEXT);
 
@@ -103,7 +109,7 @@ public class PanelKhoVatTu extends JPanel {
                 List<LoVatTu> sapHet = khoDAO.getLoSapHetHan();
                 List<VatTu> tonThap = khoDAO.getVatTuTonThap();
                 StringBuilder sb = new StringBuilder();
-                sb.append("1. CÁC LÔ CẬN HẠN SỬ DỤNG (≤ 30 NGÀY - RB11):\n");
+                sb.append("1. CÁC LÔ CẬN HẠN SỬ DỤNG (≤ 30 NGÀY):\n");
                 if (sapHet.isEmpty()) {
                     sb.append("   - Không có lô nào cận hạn trong 30 ngày.\n");
                 } else {
@@ -121,7 +127,7 @@ public class PanelKhoVatTu extends JPanel {
                                 vt.getMaVatTu(), vt.getTenVatTu(), vt.getTongTon(), vt.getMucTonToiThieu(), vt.getDonViTinh()));
                     }
                 }
-                JOptionPane.showMessageDialog(PanelKhoVatTu.this, sb.toString(), "Chi tiết cảnh báo Kho (FEFO)", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(PanelKhoVatTu.this, sb.toString(), "Chi tiết cảnh báo Kho", JOptionPane.WARNING_MESSAGE);
             }
         });
 
@@ -134,14 +140,14 @@ public class PanelKhoVatTu extends JPanel {
         pnlTopGroup.add(pnlKPI, BorderLayout.CENTER);
         pnlTopGroup.add(pnlAlertBanner, BorderLayout.SOUTH);
 
-        // ==================== 4. TABLE CARD (FEFO BATCHES) ====================
+        // ==================== 4. TABLE CARD ====================
         JPanel pnlTableCard = UITheme.createCard();
         pnlTableCard.setLayout(new BorderLayout(0, 10));
 
         JPanel pnlFilterLine = new JPanel(new BorderLayout(8, 0));
         pnlFilterLine.setOpaque(false);
 
-        JLabel lblTableTitle = new JLabel("Danh mục lô vật tư theo thứ tự FEFO (Hạn dùng gần nhất xếp đầu)");
+        JLabel lblTableTitle = new JLabel("Danh mục các lô vật tư trong kho");
         lblTableTitle.setFont(UITheme.FONT_SUBTITLE);
         lblTableTitle.setForeground(UITheme.TEXT_DARK);
 
@@ -167,7 +173,7 @@ public class PanelKhoVatTu extends JPanel {
         pnlFilterLine.add(lblTableTitle, BorderLayout.WEST);
         pnlFilterLine.add(pnlRightFilter, BorderLayout.EAST);
 
-        String[] headers = {"Mã Lô", "Tên Vật Tư", "Số Lô", "Số Lượng Tồn", "Đơn Vị", "Hạn Sử Dụng (FEFO)", "Trạng Thái Lô"};
+        String[] headers = {"Mã Lô", "Tên Vật Tư", "Số Lô", "Số Lượng Tồn", "Đơn Vị", "Hạn Sử Dụng", "Trạng Thái Lô"};
         modelLo = new DefaultTableModel(headers, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -179,47 +185,8 @@ public class PanelKhoVatTu extends JPanel {
         pnlTableCard.add(pnlFilterLine, BorderLayout.NORTH);
         pnlTableCard.add(new JScrollPane(tblLoVatTu), BorderLayout.CENTER);
 
-        // ==================== 5. BOTTOM 2 INFO BOXES ====================
-        JPanel pnlBottomInfo = new JPanel(new GridLayout(1, 2, 14, 0));
-        pnlBottomInfo.setOpaque(false);
-        pnlBottomInfo.setPreferredSize(new Dimension(0, 80));
-
-        JPanel pnlB1 = new JPanel(new BorderLayout(0, 4));
-        pnlB1.setBackground(new Color(240, 253, 250));
-        pnlB1.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(204, 251, 241), 1, true),
-                new EmptyBorder(10, 12, 10, 12)
-        ));
-        JLabel lblB1Title = new JLabel("FEFO - Hết hạn trước, xuất trước (First Expired, First Out)");
-        lblB1Title.setFont(UITheme.FONT_BOLD);
-        lblB1Title.setForeground(UITheme.PRIMARY);
-        JLabel lblB1Desc = new JLabel("Khi hoàn tất điều trị, hệ thống tự động trừ từ lô có HSD gần nhất còn khả dụng (RB12).");
-        lblB1Desc.setFont(UITheme.FONT_TINY);
-        lblB1Desc.setForeground(UITheme.TEXT_DARK);
-        pnlB1.add(lblB1Title, BorderLayout.NORTH);
-        pnlB1.add(lblB1Desc, BorderLayout.CENTER);
-
-        JPanel pnlB2 = new JPanel(new BorderLayout(0, 4));
-        pnlB2.setBackground(Color.WHITE);
-        pnlB2.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
-                new EmptyBorder(10, 12, 10, 12)
-        ));
-        JLabel lblB2Title = new JLabel("Biến động xuất nhập kho gần nhất");
-        lblB2Title.setFont(UITheme.FONT_BOLD);
-        lblB2Title.setForeground(UITheme.TEXT_DARK);
-        JLabel lblB2Desc = new JLabel("Xuất tự động: PDT001 - Trừ 1 găng tay, 1 thuốc tê Lidocaine từ lô LO003.");
-        lblB2Desc.setFont(UITheme.FONT_TINY);
-        lblB2Desc.setForeground(UITheme.TEXT_MUTED);
-        pnlB2.add(lblB2Title, BorderLayout.NORTH);
-        pnlB2.add(lblB2Desc, BorderLayout.CENTER);
-
-        pnlBottomInfo.add(pnlB1);
-        pnlBottomInfo.add(pnlB2);
-
         add(pnlTopGroup, BorderLayout.NORTH);
         add(pnlTableCard, BorderLayout.CENTER);
-        add(pnlBottomInfo, BorderLayout.SOUTH);
 
         taiDuLieu();
     }
@@ -293,6 +260,12 @@ public class PanelKhoVatTu extends JPanel {
     }
 
     private void xuLyXuatKhoNhanh() {
+        if (currentUser != null && !currentUser.isKho() && !currentUser.isQuanLy()) {
+            JOptionPane.showMessageDialog(this,
+                    "Chức năng quản lý xuất kho chỉ dành cho Thủ kho hoặc Quản lý!",
+                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         int row = tblLoVatTu.getSelectedRow();
         if (row < 0 || row >= cachedListLo.size()) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 lô vật tư trong bảng cần xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
@@ -300,8 +273,8 @@ public class PanelKhoVatTu extends JPanel {
         }
         LoVatTu selected = cachedListLo.get(row);
         String input = JOptionPane.showInputDialog(this, 
-                "Xuất kho vật tư: " + selected.getTenVatTu() + "\n(Hệ thống tự động áp dụng FEFO - trừ lô có hạn sử dụng gần nhất trước)\n\nNhập số lượng xuất (" + selected.getDonViTinh() + "):", 
-                "Xuất kho FEFO (RB12)", JOptionPane.QUESTION_MESSAGE);
+                "Xuất kho vật tư: " + selected.getTenVatTu() + "\n\nNhập số lượng xuất (" + selected.getDonViTinh() + "):", 
+                "Xuất kho vật tư", JOptionPane.QUESTION_MESSAGE);
         if (input != null && !input.trim().isEmpty()) {
             try {
                 int sl = Integer.parseInt(input.trim());
@@ -311,7 +284,7 @@ public class PanelKhoVatTu extends JPanel {
                 }
                 boolean ok = khoDAO.xuatKhoFEFO(selected.getMaVatTu(), sl);
                 if (ok) {
-                    JOptionPane.showMessageDialog(this, "Đã xuất " + sl + " " + selected.getDonViTinh() + " [" + selected.getTenVatTu() + "] thành công!\nCác lô đã được tự động trừ tồn kho theo thứ tự FEFO (Hạn gần trừ trước).", "Thành công (RB12)", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Đã xuất " + sl + " " + selected.getDonViTinh() + " [" + selected.getTenVatTu() + "] thành công!", "Xuất kho thành công", JOptionPane.INFORMATION_MESSAGE);
                     taiDuLieu();
                 } else {
                     JOptionPane.showMessageDialog(this, "Không thể xuất kho: Số lượng khả dụng không đủ!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
@@ -323,6 +296,12 @@ public class PanelKhoVatTu extends JPanel {
     }
 
     private void hienDialogNhapKho() {
+        if (currentUser != null && !currentUser.isKho() && !currentUser.isQuanLy()) {
+            JOptionPane.showMessageDialog(this,
+                    "Chức năng nhập lô vật tư mới chỉ dành cho Thủ kho hoặc Quản lý!",
+                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Nhập lô vật tư mới", true);
         dlg.setSize(420, 380);
         dlg.setLocationRelativeTo(this);
@@ -331,7 +310,7 @@ public class PanelKhoVatTu extends JPanel {
         pnl.setBackground(Color.WHITE);
         pnl.setBorder(new EmptyBorder(20, 24, 20, 24));
 
-        JLabel lblT = new JLabel("NHẬP KHO THEO LÔ (FEFO)");
+        JLabel lblT = new JLabel("NHẬP KHO VẬT TƯ THEO LÔ");
         lblT.setFont(UITheme.FONT_SUBTITLE);
         lblT.setForeground(UITheme.PRIMARY);
 
@@ -362,9 +341,16 @@ public class PanelKhoVatTu extends JPanel {
                 LoVatTu lo = new LoVatTu(khoDAO.taoMaLoMoi(), vt.getMaVatTu(), vt.getTenVatTu(), vt.getDonViTinh(), txtSoLo.getText().trim(), hsd, sl, "KHA_DUNG");
                 boolean ok = khoDAO.themLoVatTu(lo);
                 if (ok) {
-                    JOptionPane.showMessageDialog(dlg, "Đã nhập lô thành công! Lô tự động xếp theo FEFO.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                     dlg.dispose();
                     taiDuLieu();
+                    for (int i = 0; i < modelLo.getRowCount(); i++) {
+                        if (lo.getMaLo().equals(modelLo.getValueAt(i, 0))) {
+                            tblLoVatTu.setRowSelectionInterval(i, i);
+                            tblLoVatTu.scrollRectToVisible(tblLoVatTu.getCellRect(i, 0, true));
+                            break;
+                        }
+                    }
+                    JOptionPane.showMessageDialog(this, "Đã nhập lô " + lo.getMaLo() + " thành công!", "Nhập kho thành công", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(dlg, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -392,24 +378,24 @@ public class PanelKhoVatTu extends JPanel {
     private void xuLyKiemKe() {
         // Chọn vật tư
         List<VatTu> dsVT = khoDAO.getAllVatTu();
-        if (dsVT.isEmpty()) { JOptionPane.showMessageDialog(this, "Khong co vat tu nao!"); return; }
-        String[] tenVT = dsVT.stream().map(v -> v.getMaVatTu() + " - " + v.getTenVatTu() + " (Ton: " + v.getTongTon() + " " + v.getDonViTinh() + ")").toArray(String[]::new);
-        String chon = (String) JOptionPane.showInputDialog(this, "Chon vat tu can kiem ke:", "Kiem ke ton kho",
+        if (dsVT.isEmpty()) { JOptionPane.showMessageDialog(this, "Không có vật tư nào trong kho!", "Thông báo", JOptionPane.WARNING_MESSAGE); return; }
+        String[] tenVT = dsVT.stream().map(v -> v.getMaVatTu() + " - " + v.getTenVatTu() + " (Tồn: " + v.getTongTon() + " " + v.getDonViTinh() + ")").toArray(String[]::new);
+        String chon = (String) JOptionPane.showInputDialog(this, "Chọn vật tư cần kiểm kê:", "Kiểm kê tồn kho",
             JOptionPane.QUESTION_MESSAGE, null, tenVT, tenVT[0]);
         if (chon == null) return;
         String maVT = chon.split(" - ")[0];
 
-        String soLuongStr = JOptionPane.showInputDialog(this, "Nhap so luong thuc te dem duoc:", "Kiem ke ton kho", JOptionPane.QUESTION_MESSAGE);
-        if (soLuongStr == null) return;
+        String soLuongStr = JOptionPane.showInputDialog(this, "Nhập số lượng thực tế đếm được trong kho:\n(Vật tư: " + chon + ")", "Kiểm kê tồn kho", JOptionPane.QUESTION_MESSAGE);
+        if (soLuongStr == null || soLuongStr.trim().isEmpty()) return;
         try {
             int soLuong = Integer.parseInt(soLuongStr.trim());
-            String lyDo = JOptionPane.showInputDialog(this, "Nhap ly do dieu chinh (neu co):", "Kiem ke");
-            if (lyDo == null) lyDo = "Kiem ke dinh ky";
+            String lyDo = JOptionPane.showInputDialog(this, "Nhập lý do điều chỉnh tồn kho (nếu có):", "Lý do kiểm kê", JOptionPane.QUESTION_MESSAGE);
+            if (lyDo == null || lyDo.trim().isEmpty()) lyDo = "Kiểm kê định kỳ";
             khoDAO.dieuChinhTonKho(maVT, soLuong, lyDo);
-            JOptionPane.showMessageDialog(this, "Da cap nhat ton kho thanh cong!");
+            JOptionPane.showMessageDialog(this, "Đã cập nhật số lượng tồn kho thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
             taiDuLieu();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "So luong khong hop le!", "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Số lượng nhập vào không hợp lệ!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

@@ -42,14 +42,15 @@ public class LichHenBUS {
             throw new Exception("Vui lòng chọn ngày hẹn khám!");
         }
         if (lh.getGioBatDau().compareTo(lh.getGioKetThuc()) >= 0) {
-            throw new Exception("Giờ bắt đầu phải trước giờ kết thúc (RB06)!");
+            throw new Exception("Giờ bắt đầu phải trước giờ kết thúc!");
         }
 
-        // RB07: Kiểm tra trùng lịch bác sĩ hoặc trùng ghế điều trị
+        // Kiểm tra trùng lịch bác sĩ hoặc trùng ghế điều trị
         java.sql.Date sqlDate = new java.sql.Date(lh.getNgayHen().getTime());
         boolean trungLich = lichHenDAO.kiemTraTrungLich(lh.getMaBS(), lh.getMaGhe(), sqlDate, lh.getGioBatDau(), lh.getGioKetThuc());
         if (trungLich) {
-            throw new Exception("Trùng lịch hẹn! Bác sĩ hoặc Ghế điều trị đã có bệnh nhân khác trong khung giờ này (RB07).");
+            throw new Exception("Trùng lịch hẹn! Bác sĩ hoặc Ghế điều trị đã có ca hẹn khác trong khung giờ này.\n"
+                    + "Vui lòng chọn khung giờ khác hoặc điều phối sang Bác sĩ/Ghế khác.");
         }
 
         if (lh.getMaLichHen() == null || lh.getMaLichHen().isEmpty()) {
@@ -65,5 +66,9 @@ public class LichHenBUS {
         if (!lichHenDAO.doiTrangThai(maLichHen, trangThai)) {
             throw new Exception("Cập nhật trạng thái lịch hẹn thất bại!");
         }
+    }
+
+    public List<LichHen> getLichBacSiTheoNgay(String maBS, java.sql.Date ngayHen) {
+        return lichHenDAO.getLichBacSiTheoNgay(maBS, ngayHen);
     }
 }

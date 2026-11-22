@@ -21,25 +21,50 @@ cmd /c run.bat
 ---
 
 ## 2. DANH SÁCH TÀI KHOẢN DEMO PHÂN QUYỀN (RBAC)
-Hệ thống tích hợp sẵn 4 nút **chọn nhanh vai trò** trên màn hình Đăng nhập để thuận tiện khi thuyết trình trước hội đồng:
+Nhập trực tiếp tài khoản & mật khẩu tương ứng vào form đăng nhập:
 
 | Vai trò | Tên đăng nhập | Mật khẩu | Quyền hạn trong hệ thống |
 | :--- | :--- | :--- | :--- |
-| **Quản lý (Admin)** | `admin` | `admin123` | Toàn quyền truy cập tất cả 8 phân hệ, bảng giá dịch vụ & báo cáo |
-| **Lễ tân** | `letan01` | `123456` | Tiếp nhận bệnh nhân, đặt lịch hẹn, lập hóa đơn & thu tiền trả góp |
-| **Bác sĩ điều trị** | `bacsi01` | `123456` | Xem lịch khám, khám lâm sàng, tương tác sơ đồ răng, kê đơn thuốc |
-| **Thủ kho** | `kho01` | `123456` | Theo dõi tồn kho theo lô, nhập hàng mới, cảnh báo FEFO & xuất kho |
+| **Quản lý (Admin)** | `admin` | `123456` | Toàn quyền truy cập tất cả 8 phân hệ, bảng giá dịch vụ & báo cáo |
+| **Lễ tân** | `letan` | `123456` | Tiếp nhận bệnh nhân, đặt lịch hẹn, lập hóa đơn & thu tiền trả góp |
+| **Bác sĩ điều trị** | `bacsi` | `123456` | Xem lịch khám riêng, khám lâm sàng, bệnh án, chỉ định điều trị & kê đơn thuốc |
+| **Thủ kho** | `thukho` | `123456` | Theo dõi tồn kho theo lô, nhập hàng mới, cảnh báo FEFO & xuất kho |
 
 ---
 
-## 3. KỊCH BẢN 8 BƯỚC THUYẾT TRÌNH DEMO TRƯỚC GIẢNG VIÊN
+## 3. BỐI CẢNH & 4 LUẬT NGHIỆP VỤ CỐT LÕI (BẮT BUỘC BẢO VỆ)
+
+Hệ thống được thiết kế theo chuẩn Kiến trúc 3 lớp (3-Tier: GUI - BUS - DAO - DTO) tuân thủ nghiêm ngặt 4 Luật nghiệp vụ:
+
+### 🎯 Luật 1: Tiếp nhận & Lịch hẹn
+* **Chống trùng lịch đa chiều (RB07):** Bắt buộc kiểm tra đồng thời cả **Bác sĩ** VÀ **Phòng/Ghế điều trị** trong cùng khung giờ. Nếu trùng, hệ thống từ chối lưu và đưa ra giải pháp điều phối bác sĩ khác hoặc chọn ghế/ca trống.
+* **Quy trình tiếp nhận:** Chỉ khi Lễ tân xác nhận trạng thái **"Đã đến khám"** (`DA_DEN`), bệnh nhân mới xuất hiện trong hàng đợi của bác sĩ.
+
+### 🎯 Luật 2: Khám, Điều trị & Kiểm tra vật tư theo định mức
+* **Kiểm tra trước khi chỉ định:** Khi bác sĩ chọn dịch vụ, hệ thống đối soát bảng định mức tiêu hao `DINH_MUC_VAT_TU` với các lô hàng còn hạn sử dụng (`HanSuDung > Ngày hiện tại`) trong kho. Nếu không đủ, từ chối lưu và nêu đích danh từng vật tư bị thiếu.
+* **Chưa trừ kho ở bước chỉ định:** Chỉ ghi nhận chỉ định vào hồ sơ lâm sàng.
+
+### 🎯 Luật 3: Quản lý kho theo nguyên tắc FEFO (First Expired, First Out)
+* **Thời điểm trừ kho:** Chỉ lập phiếu xuất kho và trừ tồn kho chính thức **SAU KHI** dịch vụ được bác sĩ xác nhận hoàn thành điều trị.
+* **Thuật toán FEFO:** Chỉ lấy các lô có `SoLuongTon > 0` và còn hạn, xếp theo `HanSuDung ASC` (cận hạn xuất trước). Nếu lô đầu không đủ số lượng định mức, trừ hết lô đó rồi tự động chuyển sang lô tiếp theo.
+* **Giao dịch an toàn:** Toàn bộ quá trình bọc trong **SQL Transaction** (`conn.setAutoCommit(false)`), nếu bất kỳ thao tác nào lỗi sẽ rollback toàn bộ.
+
+### 🎯 Luật 4: Thanh toán, Công nợ & Xử lý Niềng răng
+* **Đối trừ tiền cọc & Trả góp:** Tiền đặt cọc được lưu độc lập và tự động đối trừ khi lập hóa đơn. Nếu trả thiếu -> tự động cập nhật sổ nợ `HO_SO_CONG_NO`.
+* **Phân định 2 trạng thái niềng răng độc lập:**
+  * **Tạm hoãn (`TAM_HOAN`):** Dừng toàn bộ lịch tái khám tương lai, bảo lưu kế hoạch điều trị, **tuyệt đối không thay đổi công nợ/hóa đơn**.
+  * **Đã hủy (`HUY`):** Thu ngân lập yêu cầu hủy và đề xuất giảm nợ -> **Bắt buộc có bước Quản lý phê duyệt** mới được cập nhật số liệu công nợ trong CSDL.
+
+---
+
+## 4. KỊCH BẢN 8 BƯỚC THUYẾT TRÌNH DEMO TRƯỚC GIẢNG VIÊN
 
 ### Bước 1: Màn hình Đăng nhập (`01 · Đăng nhập`)
-- **Điểm nhấn:** Thiết kế Card tối giản, hiện đại, màu chủ đạo Deep Teal (`#006C5B`).
+- **Điểm nhấn:** Thiết kế Card tối giản, chuẩn phần mềm chuyên nghiệp, màu chủ đạo Deep Teal (`#006C5B`).
 - **Nghiệp vụ chứng minh:**
-  - Kiểm tra tài khoản & mật khẩu với CSDL SQL Server.
+  - Kiểm tra tài khoản & mật khẩu với CSDL SQL Server (mật khẩu mã hóa/xác thực an toàn).
   - Khóa tài khoản tạm thời nếu đăng nhập sai quá 3 lần liên tiếp (Ràng buộc **RB04**).
-  - Bấm nút chọn nhanh vai trò (Quản lý/Lễ tân/Bác sĩ/Thủ kho) để đăng nhập tức thì.
+  - Đăng nhập với tài khoản Quản lý (`admin` / `123456`) để trình diễn toàn bộ chức năng.
 
 ### Bước 2: Bảng Tổng quan Dashboard (`02 · Tổng quan`)
 - **Điểm nhấn:** 4 thẻ KPI động (Doanh thu, Lượt khám, Doanh thu dịch vụ, Công nợ phát sinh).
@@ -59,13 +84,18 @@ Hệ thống tích hợp sẵn 4 nút **chọn nhanh vai trò** trên màn hình
   - **Banner cảnh báo tiền sử dị ứng** màu cam nổi bật (Ví dụ: Dị ứng Penicillin, tim mạch) giúp bác sĩ không chỉ định sai thuốc (**RB01**).
   - Bấm **"+ Thêm bệnh nhân"** hoặc **"Chỉnh sửa"** để cập nhật thông tin CCCD, ngày sinh, số điện thoại (**RB02** - xóa mềm, giữ lịch sử).
 
-### Bước 5: Khám lâm sàng & Sơ đồ răng 32 chiếc (`05 · Khám & điều trị`)
-- **Điểm nhấn:** **Sơ đồ răng tương tác 32 chiếc (Răng 18 – 48)**: Nhấp chuột vào bất kỳ răng nào (ví dụ Răng 36, Răng 48) để chọn vị trí thủ thuật.
+### Bước 5: Khám lâm sàng & Bệnh án điều trị (`05 · Khám & điều trị`)
+- **Điểm nhấn:** Phân quyền bảo mật cao: Bác sĩ chỉ xem hàng đợi và bệnh án của bệnh nhân phụ trách. Form nhập bệnh án toàn diện (Triệu chứng, chẩn đoán, phác đồ điều trị, lời dặn).
 - **Nghiệp vụ chứng minh:**
-  - Form nhập triệu chứng, chẩn đoán, lời dặn bác sĩ.
-  - Bảng chỉ định dịch vụ thủ thuật nha khoa (Trám răng, Cạo vôi, Chỉnh nha...).
-  - Nút **"+ Thêm thuốc"**: Chọn thuốc, nhập số lượng, liều dùng để kê đơn.
-  - Bấm **"Hoàn tất điều trị & Trừ kho (FEFO)"**: Tự động lưu phiếu khám và gọi trigger trừ kho thuốc theo hạn dùng.
+  - Hàng đợi bệnh nhân đã đến phòng chờ, cảnh báo tiền sử dị ứng nổi bật (**RB01**).
+  - Bảng chỉ định dịch vụ thủ thuật nha khoa (Trám răng Composite, Cạo vôi, Nhổ răng...).
+  - Nút **"+ Thêm thuốc"**: Kê đơn thuốc điều trị.
+  - Bấm **"Hoàn tất điều trị & Trừ kho (FEFO)"**:
+    1. Bật thông báo hoàn tất ca điều trị thành công (kèm mã phiếu khám và bệnh nhân).
+    2. Tự động lưu phiếu khám vào CSDL và cập nhật trạng thái lịch hẹn thành `Đã khám`.
+    3. Tự động lập Hóa đơn viện phí chuyển sang màn hình `06 · Thanh toán & công nợ` (trạng thái `Chưa trả`).
+    4. Kích hoạt xuất kho vật tư và trừ lô thuốc theo nguyên tắc FEFO (**RB12**).
+    5. Tự động xóa danh sách dịch vụ đã khám và sẵn sàng cho ca khám tiếp theo.
 
 ### Bước 6: Kho vật tư & Thuật toán FEFO (`07 · Kho vật tư`)
 - **Điểm nhấn:** Quản lý kho theo từng lô hàng (`LO_VAT_TU`) sắp xếp theo thứ tự `HanSuDung ASC` (Hạn gần nhất lên trên cùng).
@@ -105,7 +135,7 @@ c:\Users\admin\QuanLyNhaKhoa\
 │   ├── model/                   # Data Transfer Objects (DTO): TaiKhoan, BenhNhan, LichHen, ...
 │   ├── dao/                     # Data Access Objects (SQL Queries, Transactions): TaiKhoanDAO, ...
 │   ├── bus/                     # Business Logic Layer (Validation, Rules RB01-RB16): LichHenBUS, ...
-│   ├── gui/                     # Presentation Layer (JFrame, JPanel, Sơ đồ răng, Biểu đồ): MainFrame, ...
+│   ├── gui/                     # Presentation Layer (JFrame, JPanel, Biểu đồ): MainFrame, ...
 │   └── util/                    # Hỗ trợ: DBConnect, FormatUtil, UITheme (màu sắc, font chữ)
 ├── run.bat                      # Script biên dịch và chạy ứng dụng 1-click
 └── BaoCaoDoanhThu_NhaKhoa.csv   # File kết xuất báo cáo Excel tự động

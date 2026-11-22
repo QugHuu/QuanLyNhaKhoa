@@ -90,12 +90,12 @@ public class MainFrame extends JFrame {
         pnlContent.setBackground(UITheme.BG_MAIN);
 
         // Khởi tạo các panels
-        panelTongQuan = new PanelTongQuan();
-        panelBenhNhan = new PanelBenhNhan();
-        panelLichHen = new PanelLichHen();
-        panelKhamBenh = new PanelKhamBenh();
-        panelHoaDon = new PanelHoaDon();
-        panelKhoVatTu = new PanelKhoVatTu();
+        panelTongQuan = new PanelTongQuan(currentUser);
+        panelBenhNhan = new PanelBenhNhan(currentUser);
+        panelLichHen = new PanelLichHen(currentUser);
+        panelKhamBenh = new PanelKhamBenh(currentUser);
+        panelHoaDon = new PanelHoaDon(currentUser);
+        panelKhoVatTu = new PanelKhoVatTu(currentUser);
         panelDichVu = new PanelDichVu();
         panelThongKe = new PanelThongKe();
         panelNhanSu = new PanelNhanSu();
@@ -154,10 +154,10 @@ public class MainFrame extends JFrame {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 JOptionPane.showMessageDialog(MainFrame.this,
                         "HƯỚNG DẪN SỬ DỤNG NHANH HỆ THỐNG NHA KHOA:\n\n"
-                        + "1. Lễ tân: Tiếp nhận bệnh nhân, Đặt lịch hẹn (chống trùng RB07), Lập hóa đơn & Thu trả góp (RB15).\n"
-                        + "2. Bác sĩ: Khám & điều trị trên Sơ đồ răng 32 chiếc, Kê đơn thuốc, Cảnh báo dị ứng (RB01).\n"
-                        + "3. Thủ kho: Quản lý lô vật tư theo nguyên tắc FEFO - Hạn gần xuất trước (RB11, RB12).\n"
-                        + "4. Quản lý: Xem biểu đồ doanh thu, hiệu suất bác sĩ, xuất báo cáo Excel UTF-8.\n\n"
+                        + "1. Lễ tân: Tiếp nhận bệnh nhân, đặt lịch hẹn khám và thanh toán viện phí.\n"
+                        + "2. Bác sĩ: Khám chữa bệnh, chỉ định thủ thuật và kê đơn thuốc.\n"
+                        + "3. Quản lý kho: Nhập xuất vật tư, kiểm soát hạn sử dụng và cảnh báo tồn kho.\n"
+                        + "4. Quản lý: Thống kê doanh thu, báo cáo hiệu suất và phân quyền nhân viên.\n\n"
                         + "Xem chi tiết kịch bản bảo vệ trong file: HUONG_DAN_BAO_VE_DO_AN.md",
                         "Hướng dẫn sử dụng", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -316,7 +316,7 @@ public class MainFrame extends JFrame {
         if (btn != null) {
             btn.doClick();
         } else {
-            JOptionPane.showMessageDialog(this, "Tài khoản [" + currentUser.getTenVaiTro() + "] không có quyền truy cập phân hệ này!", "Phân quyền (RBAC)", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Tài khoản [" + currentUser.getTenVaiTro() + "] không có quyền truy cập chức năng này!", "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
         }
     }
 

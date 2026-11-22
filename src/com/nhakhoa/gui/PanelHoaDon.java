@@ -2,9 +2,12 @@ package com.nhakhoa.gui;
 
 import com.nhakhoa.bus.BenhNhanBUS;
 import com.nhakhoa.dao.HoaDonDAO;
+import com.nhakhoa.dao.KeHoachNiengRangDAO;
 import com.nhakhoa.model.BenhNhan;
 import com.nhakhoa.model.HoSoCongNo;
 import com.nhakhoa.model.HoaDon;
+import com.nhakhoa.model.KeHoachNiengRang;
+import com.nhakhoa.model.TaiKhoan;
 import com.nhakhoa.util.FormatUtil;
 import com.nhakhoa.util.UITheme;
 
@@ -17,8 +20,8 @@ import java.util.Date;
 import java.util.List;
 
 public class PanelHoaDon extends JPanel {
-    private JTable tblHoaDon, tblCongNo;
-    private DefaultTableModel modelHoaDon, modelCongNo;
+    private JTable tblHoaDon, tblCongNo, tblNiengRang;
+    private DefaultTableModel modelHoaDon, modelCongNo, modelNiengRang;
 
     private JLabel lblPayPatient, lblPayInvoice, lblPayTotal, lblPayDiscount, lblPayPaid, lblPayRemaining;
     private JTextField txtPayAmount;
@@ -27,12 +30,19 @@ public class PanelHoaDon extends JPanel {
 
     private HoaDonDAO hoaDonDAO = new HoaDonDAO();
     private BenhNhanBUS benhNhanBUS = new BenhNhanBUS();
+    private KeHoachNiengRangDAO keHoachDAO = new KeHoachNiengRangDAO();
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private String currentSelectedMaHD = null;
     private String currentSelectedMaCN = null;
     private double currentRemaining = 0;
+    private TaiKhoan currentUser;
 
     public PanelHoaDon() {
+        this(null);
+    }
+
+    public PanelHoaDon(TaiKhoan user) {
+        this.currentUser = user;
         setLayout(new BorderLayout(0, 16));
         setBorder(new EmptyBorder(16, 20, 16, 20));
         setBackground(UITheme.BG_MAIN);
@@ -145,8 +155,45 @@ public class PanelHoaDon extends JPanel {
 
         pnlTab2.add(new JScrollPane(tblCongNo), BorderLayout.CENTER);
 
+        // TAB 3: KẾ HOẠCH NIỀNG RĂNG (LUẬT 4)
+        JPanel pnlTab3 = new JPanel(new BorderLayout(0, 10));
+        pnlTab3.setOpaque(false);
+
+        String[] headersNR = {"Mã KH", "Bệnh Nhân", "Mã HĐ", "Dư Nợ Còn Lại", "Lộ Trình Giai Đoạn", "Lý Do Tạm Hoãn/Hủy", "Trạng Thái"};
+        modelNiengRang = new DefaultTableModel(headersNR, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        tblNiengRang = new JTable(modelNiengRang);
+        UITheme.formatTable(tblNiengRang);
+        tblNiengRang.getColumnModel().getColumn(6).setCellRenderer(new UITheme.StatusBadgeRenderer());
+
+        JPanel pnlNRAction = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
+        pnlNRAction.setOpaque(false);
+
+        JButton btnTamHoanNR = UITheme.createButton("Tạm hoãn kế hoạch (Bảo lưu công nợ)", Color.WHITE, UITheme.TEXT_DARK);
+        btnTamHoanNR.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_COLOR, 1, true),
+                new EmptyBorder(6, 12, 6, 12)
+        ));
+        btnTamHoanNR.addActionListener(e -> xuLyTamHoanNiengRang());
+
+        JButton btnHuyNR = UITheme.createButton("Hủy kế hoạch (Quản lý phê duyệt)", UITheme.DANGER_BG, UITheme.DANGER);
+        btnHuyNR.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.DANGER_BG, 1, true),
+                new EmptyBorder(6, 12, 6, 12)
+        ));
+        btnHuyNR.addActionListener(e -> xuLyHuyNiengRang());
+
+        pnlNRAction.add(btnTamHoanNR);
+        pnlNRAction.add(btnHuyNR);
+
+        pnlTab3.add(new JScrollPane(tblNiengRang), BorderLayout.CENTER);
+        pnlTab3.add(pnlNRAction, BorderLayout.SOUTH);
+
         tabBills.addTab("Danh sách hóa đơn", pnlTab1);
-        tabBills.addTab("Sổ theo dõi công nợ trả góp (RB15)", pnlTab2);
+        tabBills.addTab("Sổ theo dõi công nợ trả góp", pnlTab2);
+        tabBills.addTab("Kế hoạch niềng răng & trả góp", pnlTab3);
 
         pnlLeftCard.add(tabBills, BorderLayout.CENTER);
 
@@ -316,9 +363,149 @@ public class PanelHoaDon extends JPanel {
                     cn.getTinhTrang()
             });
         }
+
+        modelNiengRang.setRowCount(0);
+        List<KeHoachNiengRang> listKH = keHoachDAO.getAll();
+        for (KeHoachNiengRang kh : listKH) {
+            modelNiengRang.addRow(new Object[]{
+                    kh.getMaKeHoach(),
+                    kh.getTenBN() + " (" + kh.getMaBN() + ")",
+                    kh.getMaHoaDon(),
+                    FormatUtil.formatMoney(kh.getSoDuNo()),
+                    kh.getLoTrinhGiaiDoan(),
+                    kh.getLyDoTamHoanHuy() != null ? kh.getLyDoTamHoanHuy() : "---",
+                    kh.getTinhTrang()
+            });
+        }
+    }
+
+    private void xuLyTamHoanNiengRang() {
+        int row = tblNiengRang.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một kế hoạch niềng răng trong bảng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String maKH = modelNiengRang.getValueAt(row, 0).toString();
+        String tenBN = modelNiengRang.getValueAt(row, 1).toString();
+
+        String lyDo = JOptionPane.showInputDialog(this, "Nhập lý do tạm hoãn kế hoạch niềng răng của " + tenBN + ":", "Tạm hoãn kế hoạch", JOptionPane.QUESTION_MESSAGE);
+        if (lyDo == null || lyDo.trim().isEmpty()) return;
+
+        boolean ok = keHoachDAO.tamHoanKeHoach(maKH, lyDo.trim());
+        if (ok) {
+            JOptionPane.showMessageDialog(this,
+                    "ĐÃ TẠM HOÃN KẾ HOẠCH THÀNH CÔNG!\n\n"
+                    + "• Kế hoạch: " + maKH + " (" + tenBN + ")\n"
+                    + "• Trạng thái mới: Tạm hoãn\n"
+                    + "• Lịch hẹn tái khám đã được dừng.\n"
+                    + "• Kế hoạch và công nợ được bảo lưu nguyên vẹn.",
+                    "Tạm hoãn thành công", JOptionPane.INFORMATION_MESSAGE);
+            taiDuLieu();
+        } else {
+            JOptionPane.showMessageDialog(this, "Không thể cập nhật tạm hoãn! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void xuLyHuyNiengRang() {
+        int row = tblNiengRang.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một kế hoạch niềng răng trong bảng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String maKH = modelNiengRang.getValueAt(row, 0).toString();
+        String tenBN = modelNiengRang.getValueAt(row, 1).toString();
+        String duNoStr = modelNiengRang.getValueAt(row, 3).toString();
+
+        // 1. Nhập lý do hủy
+        String lyDo = JOptionPane.showInputDialog(this, "Nhập lý do chấm dứt / hủy kế hoạch niềng răng của " + tenBN + ":", "Hủy kế hoạch niềng răng", JOptionPane.QUESTION_MESSAGE);
+        if (lyDo == null || lyDo.trim().isEmpty()) return;
+
+        // 2. Nhập số tiền đề xuất giảm trừ công nợ
+        String soTienStr = JOptionPane.showInputDialog(this, "Nhập số tiền đề xuất giảm trừ/miễn giảm công nợ cho bệnh nhân (VNĐ):\n(Dư nợ hiện tại: " + duNoStr + ")", "0");
+        if (soTienStr == null) return;
+        double soTienGiamNo = 0;
+        try {
+            soTienGiamNo = Double.parseDouble(soTienStr.replaceAll("[^0-9]", ""));
+        } catch (Exception ex) {
+            soTienGiamNo = 0;
+        }
+
+        // 3. Quản lý phê duyệt
+        boolean daPheDuyet = false;
+        String nguoiDuyet = "admin";
+
+        if (currentUser != null && currentUser.isQuanLy()) {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Xác nhận phê duyệt hủy kế hoạch " + maKH + " và cập nhật điều chỉnh công nợ?\n"
+                    + "• Bệnh nhân: " + tenBN + "\n"
+                    + "• Lý do hủy: " + lyDo + "\n"
+                    + "• Số tiền giảm trừ công nợ: " + FormatUtil.formatMoney(soTienGiamNo),
+                    "Quản lý phê duyệt", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                daPheDuyet = true;
+                nguoiDuyet = currentUser.getTenDangNhap();
+            } else {
+                return;
+            }
+        } else {
+            JPanel pnlAuth = new JPanel(new GridLayout(2, 2, 8, 8));
+            JTextField txtAdminUser = new JTextField("admin");
+            JPasswordField txtAdminPass = new JPasswordField();
+            pnlAuth.add(new JLabel("Tài khoản Quản lý:"));
+            pnlAuth.add(txtAdminUser);
+            pnlAuth.add(new JLabel("Mật khẩu Quản lý:"));
+            pnlAuth.add(txtAdminPass);
+
+            int authRes = JOptionPane.showConfirmDialog(this, pnlAuth,
+                    "YÊU CẦU QUẢN LÝ PHÊ DUYỆT - Vui lòng xác thực",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+            if (authRes == JOptionPane.OK_OPTION) {
+                String u = txtAdminUser.getText().trim();
+                String p = new String(txtAdminPass.getPassword()).trim();
+                com.nhakhoa.dao.TaiKhoanDAO tkDAO = new com.nhakhoa.dao.TaiKhoanDAO();
+                TaiKhoan ql = tkDAO.dangNhap(u, p);
+                if (ql != null && ql.isQuanLy() && !"TAM_KHOA".equalsIgnoreCase(ql.getTinhTrang())) {
+                    daPheDuyet = true;
+                    nguoiDuyet = ql.getTenDangNhap();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "XÁC THỰC THẤT BẠI!\nChỉ tài khoản Quản lý mới có quyền phê duyệt hủy kế hoạch và điều chỉnh công nợ.",
+                            "Từ chối phê duyệt", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Yêu cầu hủy kế hoạch chưa được Quản lý phê duyệt. Số liệu công nợ được giữ nguyên.",
+                        "Chưa phê duyệt", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+
+        if (daPheDuyet) {
+            boolean ok = keHoachDAO.huyKeHoachVaDieuChinhCongNo(maKH, lyDo.trim(), soTienGiamNo, true, nguoiDuyet);
+            if (ok) {
+                JOptionPane.showMessageDialog(this,
+                        "ĐÃ PHÊ DUYỆT VÀ HỦY KẾ HOẠCH THÀNH CÔNG!\n\n"
+                        + "• Kế hoạch: " + maKH + " (" + tenBN + ")\n"
+                        + "• Trạng thái mới: Đã hủy\n"
+                        + "• Người phê duyệt: " + nguoiDuyet + "\n"
+                        + "• Công nợ đã điều chỉnh: Giảm trừ " + FormatUtil.formatMoney(soTienGiamNo) + ".",
+                        "Phê duyệt thành công", JOptionPane.INFORMATION_MESSAGE);
+                taiDuLieu();
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật vào CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     private void xuLyXacNhanThanhToan() {
+        if (currentUser != null && !currentUser.isLetan() && !currentUser.isQuanLy()) {
+            JOptionPane.showMessageDialog(this,
+                    "Chức năng thu ngân và thanh toán viện phí chỉ dành cho Lễ tân hoặc Quản lý!",
+                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         try {
             double soTien = Double.parseDouble(txtPayAmount.getText().trim());
             String pthuc = cboPayMethod.getSelectedItem().toString();
@@ -327,7 +514,7 @@ public class PanelHoaDon extends JPanel {
                 // Thu nợ trả góp
                 boolean ok = hoaDonDAO.traNo(currentSelectedMaCN, currentSelectedMaHD, soTien, pthuc);
                 if (ok) {
-                    JOptionPane.showMessageDialog(this, "Đã ghi nhận thanh toán trả góp thành công (RB15)!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Đã ghi nhận thanh toán trả góp thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                     taiDuLieu();
                 }
             } else if (currentSelectedMaHD != null) {
@@ -554,6 +741,12 @@ public class PanelHoaDon extends JPanel {
 
     // FR-24: Hủy hóa đơn
     private void xuLyHuyHoaDon() {
+        if (currentUser != null && !currentUser.isQuanLy()) {
+            JOptionPane.showMessageDialog(this,
+                    "Chỉ Quản lý phòng khám mới có thẩm quyền phê duyệt hủy hóa đơn tài chính!",
+                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         if (currentSelectedMaHD == null || currentSelectedMaHD.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui long chon hoa don can huy!", "Thong bao", JOptionPane.WARNING_MESSAGE);
             return;
@@ -568,17 +761,17 @@ public class PanelHoaDon extends JPanel {
             return;
         }
         int confirm = JOptionPane.showConfirmDialog(this,
-            "XAC NHAN huy hoa don " + currentSelectedMaHD + "?\nLy do: " + lyDo + "\n\nHanh dong nay KHONG the hoan tac!",
-            "Xac nhan huy hoa don", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            "XÁC NHẬN hủy hóa đơn " + currentSelectedMaHD + "?\nLý do: " + lyDo + "\n\nHành động này KHÔNG thể hoàn tác!",
+            "Xác nhận hủy hóa đơn", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) return;
 
         boolean ok = hoaDonDAO.huyHoaDon(currentSelectedMaHD);
         if (ok) {
-            JOptionPane.showMessageDialog(this, "Da huy hoa don " + currentSelectedMaHD + " thanh cong!", "Thanh cong", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Đã hủy hóa đơn " + currentSelectedMaHD + " thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
             currentSelectedMaHD = null;
             taiDuLieu();
         } else {
-            JOptionPane.showMessageDialog(this, "Hoa don da bi huy truoc do hoac co loi!", "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Hóa đơn đã bị hủy trước đó hoặc có lỗi!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

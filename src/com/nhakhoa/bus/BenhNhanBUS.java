@@ -17,6 +17,11 @@ public class BenhNhanBUS {
         return benhNhanDAO.getAll();
     }
 
+    public List<BenhNhan> getByBacSi(String maBS) {
+        if (maBS == null || maBS.trim().isEmpty()) return getAll();
+        return benhNhanDAO.getByBacSi(maBS.trim());
+    }
+
     public List<BenhNhan> timKiem(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAll();

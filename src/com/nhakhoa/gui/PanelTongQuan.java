@@ -25,8 +25,14 @@ public class PanelTongQuan extends JPanel {
     private ThongKeDAO thongKeDAO = new ThongKeDAO();
     private LichHenDAO lichHenDAO = new LichHenDAO();
     private List<LichHen> cachedListLich = new java.util.ArrayList<>();
+    private com.nhakhoa.model.TaiKhoan currentUser;
 
     public PanelTongQuan() {
+        this(null);
+    }
+
+    public PanelTongQuan(com.nhakhoa.model.TaiKhoan user) {
+        this.currentUser = user;
         setLayout(new BorderLayout(0, 16));
         setBorder(new EmptyBorder(16, 20, 16, 20));
         setBackground(UITheme.BG_MAIN);
@@ -73,10 +79,22 @@ public class PanelTongQuan extends JPanel {
         lblDoanhThu = new JLabel("0 đ");
         lblCongNo = new JLabel("0 đ");
 
-        pnlKPI.add(taoCardKPI("Lượt khám hôm nay", lblLuotKham, "Tổng lịch khám"));
-        pnlKPI.add(taoCardKPI("Bệnh nhân đang chờ", lblBenhNhanCho, "Tại sảnh phòng khám"));
-        pnlKPI.add(taoCardKPI("Doanh thu hôm nay", lblDoanhThu, "Tiền mặt & chuyển khoản"));
-        pnlKPI.add(taoCardKPI("Công nợ cần thu", lblCongNo, "Trả góp đến hạn"));
+        if (currentUser != null && currentUser.isBacSi()) {
+            pnlKPI.add(taoCardKPI("Lịch hẹn của tôi", lblLuotKham, "Tổng ca hẹn phụ trách"));
+            pnlKPI.add(taoCardKPI("Bệnh nhân chờ khám", lblBenhNhanCho, "Đang chờ tại phòng khám"));
+            pnlKPI.add(taoCardKPI("Bác sĩ phụ trách", lblDoanhThu, "Bác sĩ điều trị"));
+            pnlKPI.add(taoCardKPI("Chuyên khoa", lblCongNo, "Khoa Răng Hàm Mặt"));
+        } else if (currentUser != null && currentUser.isKho()) {
+            pnlKPI.add(taoCardKPI("Danh mục vật tư", lblLuotKham, "Mặt hàng trong kho"));
+            pnlKPI.add(taoCardKPI("Lô khả dụng", lblBenhNhanCho, "Sẵn sàng xuất dùng"));
+            pnlKPI.add(taoCardKPI("Lô cận hạn", lblDoanhThu, "Dưới 30 ngày"));
+            pnlKPI.add(taoCardKPI("Cảnh báo tồn kho", lblCongNo, "Chạm ngưỡng an toàn"));
+        } else {
+            pnlKPI.add(taoCardKPI("Lượt khám hôm nay", lblLuotKham, "Tổng lịch khám"));
+            pnlKPI.add(taoCardKPI("Bệnh nhân đang chờ", lblBenhNhanCho, "Tại sảnh phòng khám"));
+            pnlKPI.add(taoCardKPI("Doanh thu hôm nay", lblDoanhThu, "Tiền mặt & chuyển khoản"));
+            pnlKPI.add(taoCardKPI("Công nợ cần thu", lblCongNo, "Trả góp đến hạn"));
+        }
 
         JPanel pnlTop = new JPanel(new BorderLayout(0, 14));
         pnlTop.setOpaque(false);
@@ -120,6 +138,12 @@ public class PanelTongQuan extends JPanel {
                 if (row >= 0 && row < cachedListLich.size()) {
                     LichHen lh = cachedListLich.get(row);
                     if (!"DA_KHAM".equals(lh.getTinhTrang()) && !"DA_HUY".equals(lh.getTinhTrang())) {
+                        if (currentUser != null && !currentUser.isLetan() && !currentUser.isQuanLy()) {
+                            JOptionPane.showMessageDialog(PanelTongQuan.this,
+                                    "Chức năng tiếp nhận bệnh nhân do Lễ tân thực hiện khi bệnh nhân đến sảnh phòng khám!",
+                                    "Thông báo phân quyền", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
                         int opt = JOptionPane.showConfirmDialog(PanelTongQuan.this,
                                 "Tiếp nhận bệnh nhân [" + lh.getTenBN() + "] vào phòng khám ngay?",
                                 "Tiếp nhận bệnh nhân", JOptionPane.YES_NO_OPTION);
@@ -152,9 +176,19 @@ public class PanelTongQuan extends JPanel {
         JPanel pnlAttentionList = new JPanel(new GridLayout(3, 1, 0, 10));
         pnlAttentionList.setOpaque(false);
 
-        pnlAttentionList.add(taoAlertItem("03 lô vật tư cận hạn", "Khẩu trang, thuốc tê cận 30 ngày", UITheme.WARNING_BG, UITheme.WARNING_TEXT, "Xem kho", "KHO_VAT_TU"));
-        pnlAttentionList.add(taoAlertItem("Công nợ cần thu trong ngày", "Có 02 hồ sơ quá hạn trả góp", UITheme.INFO_BG, UITheme.INFO_TEXT, "Xem nợ", "HOA_DON"));
-        pnlAttentionList.add(taoAlertItem("Kho kiểm kê định mức", "Có 02 vật tư dưới mức tối thiểu", UITheme.DANGER_BG, UITheme.DANGER_TEXT, "Chi tiết", "KHO_VAT_TU"));
+        if (currentUser != null && currentUser.isBacSi()) {
+            pnlAttentionList.add(taoAlertItem("Bệnh nhân đang chờ khám", "Ưu tiên khám đúng giờ hẹn", UITheme.INFO_BG, UITheme.INFO_TEXT, "Vào khám", "KHAM_BENH"));
+            pnlAttentionList.add(taoAlertItem("Lịch làm việc hôm nay", "Kiểm tra danh sách ca điều trị", UITheme.WARNING_BG, UITheme.WARNING_TEXT, "Xem lịch", "LICH_HEN"));
+            pnlAttentionList.add(taoAlertItem("Hồ sơ bệnh nhân phụ trách", "Xem tiền sử dị ứng và kế hoạch", UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, "Xem hồ sơ", "BENH_NHAN"));
+        } else if (currentUser != null && currentUser.isKho()) {
+            pnlAttentionList.add(taoAlertItem("03 lô vật tư cận hạn", "Khẩu trang, thuốc tê cận 30 ngày", UITheme.WARNING_BG, UITheme.WARNING_TEXT, "Xem kho", "KHO_VAT_TU"));
+            pnlAttentionList.add(taoAlertItem("Vật tư chạm ngưỡng", "Có 02 vật tư dưới mức tối thiểu", UITheme.DANGER_BG, UITheme.DANGER_TEXT, "Kiểm kê", "KHO_VAT_TU"));
+            pnlAttentionList.add(taoAlertItem("Nhập kho lô vật tư", "Cập nhật lô hàng mới nhập", UITheme.INFO_BG, UITheme.INFO_TEXT, "Nhập kho", "KHO_VAT_TU"));
+        } else {
+            pnlAttentionList.add(taoAlertItem("03 lô vật tư cận hạn", "Khẩu trang, thuốc tê cận 30 ngày", UITheme.WARNING_BG, UITheme.WARNING_TEXT, "Xem kho", "KHO_VAT_TU"));
+            pnlAttentionList.add(taoAlertItem("Công nợ cần thu trong ngày", "Có 02 hồ sơ quá hạn trả góp", UITheme.INFO_BG, UITheme.INFO_TEXT, "Xem nợ", "HOA_DON"));
+            pnlAttentionList.add(taoAlertItem("Kho kiểm kê định mức", "Có 02 vật tư dưới mức tối thiểu", UITheme.DANGER_BG, UITheme.DANGER_TEXT, "Chi tiết", "KHO_VAT_TU"));
+        }
 
         pnlRightCard.add(lblAttTitle, BorderLayout.NORTH);
         pnlRightCard.add(pnlAttentionList, BorderLayout.CENTER);
@@ -232,14 +266,40 @@ public class PanelTongQuan extends JPanel {
     }
 
     public void taiDuLieu() {
-        lblLuotKham.setText(String.valueOf(thongKeDAO.getSoLuongLichHenHomNay()));
-        lblBenhNhanCho.setText(String.valueOf(lichHenDAO.getLichHenDaDen().size()));
-        lblDoanhThu.setText(FormatUtil.formatMoney(thongKeDAO.getTongDoanhThu()));
-        lblCongNo.setText("32.800.000 đ");
+        if (currentUser != null && currentUser.isBacSi()) {
+            String myMaBS = currentUser.getMaBacSi();
+            long countChoToi = lichHenDAO.getLichHenDaDen().stream()
+                    .filter(l -> myMaBS == null || myMaBS.equals(l.getMaBS())).count();
+            long countLichCuaToi = lichHenDAO.getAll().stream()
+                    .filter(l -> myMaBS == null || myMaBS.equals(l.getMaBS())).count();
+            lblLuotKham.setText(String.valueOf(countLichCuaToi));
+            lblBenhNhanCho.setText(String.valueOf(countChoToi));
+            lblDoanhThu.setText(currentUser.getHoTen());
+            lblCongNo.setText("Răng Hàm Mặt");
+        } else if (currentUser != null && currentUser.isKho()) {
+            com.nhakhoa.dao.KhoDAO khoDAO = new com.nhakhoa.dao.KhoDAO();
+            lblLuotKham.setText(String.valueOf(khoDAO.getAllVatTu().size()));
+            lblBenhNhanCho.setText(String.valueOf(khoDAO.getAllLoVatTu().size()));
+            lblDoanhThu.setText("03 lô");
+            lblCongNo.setText("02 vật tư");
+        } else {
+            lblLuotKham.setText(String.valueOf(thongKeDAO.getSoLuongLichHenHomNay()));
+            lblBenhNhanCho.setText(String.valueOf(lichHenDAO.getLichHenDaDen().size()));
+            lblDoanhThu.setText(FormatUtil.formatMoney(thongKeDAO.getTongDoanhThu()));
+            lblCongNo.setText("32.800.000 đ");
+        }
 
         modelLichHen.setRowCount(0);
-        cachedListLich = lichHenDAO.getAll();
-        for (LichHen lh : cachedListLich) {
+        List<LichHen> allList = lichHenDAO.getAll();
+        String currentMaBS = (currentUser != null && currentUser.isBacSi()) ? currentUser.getMaBacSi() : null;
+        cachedListLich = new java.util.ArrayList<>();
+
+        boolean isTiepNhanRole = (currentUser == null || currentUser.isLetan() || currentUser.isQuanLy());
+        for (LichHen lh : allList) {
+            if (currentMaBS != null && !currentMaBS.equals(lh.getMaBS())) {
+                continue;
+            }
+            cachedListLich.add(lh);
             String gio = FormatUtil.formatShortTime(lh.getGioBatDau()) + " - " + FormatUtil.formatShortTime(lh.getGioKetThuc());
             modelLichHen.addRow(new Object[]{
                     gio,
@@ -247,7 +307,7 @@ public class PanelTongQuan extends JPanel {
                     lh.getTenBS(),
                     lh.getMaGhe(),
                     lh.getTinhTrang(),
-                    "Tiếp nhận  →"
+                    isTiepNhanRole ? "Tiếp nhận  →" : "Xem  →"
             });
         }
     }
